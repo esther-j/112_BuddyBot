@@ -26,12 +26,18 @@ def mousePressed(event, data):
 
 def chatBotResponse(data, log):
     data.responded = False
-    data.userEntry.lower()
+    data.userEntry.lower().strip()
     data.chatResponse = "ok"
     greeting(data)
+    question(data)
     log.insert(END, "\n" + data.chatResponse)
     data.responded = True
-    
+
+def question(data):
+    answers = ["I don't know", "no", "yes"]
+    if data.userEntry[-1] == "?":
+        data.chatResponse = random.choice(answers)
+
 def greeting(data):
     greetings = ["hello", "hi", "hallo", "hai", "hey"]
     if data.userEntry in greetings:
@@ -59,7 +65,20 @@ def timerFired(data):
 def redrawAll(canvas, data):
     # draw in canvas
     canvas.create_rectangle(0, 0, data.width, data.height, fill = "sky blue", width = 0)
-
+    pixelLen = data.width / 30
+    drawEyes(canvas, data, pixelLen)
+    drawMouth(canvas, data, pixelLen)
+    
+def drawEyes(canvas, data, pixelLen):
+    halfPixel = pixelLen / 2
+    canvas.create_rectangle(data.width / 4 - halfPixel, data.height / 3 - halfPixel, data.width / 4 + halfPixel, data.height / 3 + halfPixel, fill = "black")
+    canvas.create_rectangle(data.width * (3 / 4) - halfPixel, data.height / 3 - halfPixel, data.width * (3 / 4) + halfPixel, data.height / 3 + halfPixel, fill = "black")
+    
+def drawMouth(canvas, data, pixelLen):
+    canvas.create_rectangle(data.width / 3, data.height / 3 + (pixelLen * 3), data.width * 2 / 3, data.height / 3 + (pixelLen * 4), fill = "black")
+    canvas.create_rectangle(data.width / 3 - pixelLen, data.height / 3 + (pixelLen * 2), data.width / 3, data.height / 3 + (pixelLen * 3), fill = "black")
+    canvas.create_rectangle(data.width * 2 / 3, data.height / 3 + (pixelLen * 2), data.width * 2 / 3 + pixelLen, data.height / 3 + (pixelLen * 3), fill = "black")
+    
 ####################################
 # use the run function as-is
 ####################################
