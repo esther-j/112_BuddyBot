@@ -6,6 +6,7 @@ Text Tutorials: https://www.tutorialspoint.com/python/tk_text.htm http://effbot.
 """
 
 from tkinter import *
+import random
 
 ####################################
 # customize these functions
@@ -15,21 +16,37 @@ def init(data):
     # load data.xyz as appropriate
     data.chatLog = []
     data.userEntry = ""
+    data.botResponded = True
+    data.chatResponse = ""
     pass
 
 def mousePressed(event, data):
     # use event.x and event.y
     pass
+
+def chatBotResponse(data, log):
+    data.responded = False
+    data.userEntry.lower()
+    data.chatResponse = "ok"
+    greeting(data)
+    log.insert(END, "\n" + data.chatResponse)
+    data.responded = True
     
+def greeting(data):
+    greetings = ["hello", "hi", "hallo", "hai", "hey"]
+    if data.userEntry in greetings:
+        data.chatResponse = random.choice(greetings)
+
 def keyPressed(event, data, entry, log):
     entryLog = entry.get()
-    if event.keysym == "Return" and len(entryLog) > 0:
+    if event.keysym == "Return" and len(entryLog) > 0 and data.botResponded:
         data.userEntry = entryLog
         entry.delete(0, END)
         data.chatLog.append(data.userEntry)
         log.config(state = NORMAL)
         log.insert(END, "\n" + data.userEntry)
-        log.yview_pickplace("end")
+        chatBotResponse(data, log)
+        log.yview_pickplace(END)
         log.config(state = DISABLED)
         print(data.chatLog)
     # use event.char and event.keysym
