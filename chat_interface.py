@@ -3,6 +3,8 @@
 Entry Box Tutorial: http://effbot.org/tkinterbook/entry.htm
 Understanding .pack(): http://effbot.org/tkinterbook/pack.htm
 Text Tutorials: https://www.tutorialspoint.com/python/tk_text.htm http://effbot.org/tkinterbook/text.htm
+Grid Tutorial: http://effbot.org/tkinterbook/grid.htm
+Button Tutorial: http://effbot.org/tkinterbook/button.htm
 """
 
 from tkinter import *
@@ -16,22 +18,23 @@ def init(data):
     # load data.xyz as appropriate
     data.chatLog = []
     data.userEntry = ""
-    data.botResponded = True
     data.chatResponse = ""
     pass
 
-def mousePressed(event, data):
-    # use event.x and event.y
+def mousePressed(event, data, log):
+    # if event.y < data.height * 6 / 10:
+    #     log.config(state = NORMAL)
+    #     log.insert(END, "\n" + "ouch!")
+    #     log.yview_pickplace(END)
+    #     log.config(state = DISABLED)
     pass
 
 def chatBotResponse(data, log):
-    data.responded = False
     data.userEntry.lower().strip()
     data.chatResponse = "ok"
     greeting(data)
     question(data)
     log.insert(END, "\n" + data.chatResponse)
-    data.responded = True
 
 def question(data):
     answers = ["I don't know", "no", "yes"]
@@ -43,18 +46,21 @@ def greeting(data):
     if data.userEntry in greetings:
         data.chatResponse = random.choice(greetings)
 
+def processMessage(data, log, entry):
+    entry.delete(0, END)
+    data.chatLog.append(data.userEntry)
+    log.config(state = NORMAL)
+    log.insert(END, "\n" + data.userEntry)
+    chatBotResponse(data, log)
+    log.yview_pickplace(END)
+    log.config(state = DISABLED)
+    print(data.chatLog)
+
 def keyPressed(event, data, entry, log):
     entryLog = entry.get()
-    if event.keysym == "Return" and len(entryLog) > 0 and data.botResponded:
+    if event.keysym == "Return" and len(entryLog) > 0:
         data.userEntry = entryLog
-        entry.delete(0, END)
-        data.chatLog.append(data.userEntry)
-        log.config(state = NORMAL)
-        log.insert(END, "\n" + data.userEntry)
-        chatBotResponse(data, log)
-        log.yview_pickplace(END)
-        log.config(state = DISABLED)
-        print(data.chatLog)
+        processMessage(data, log, entry)
     # use event.char and event.keysym
 
 def timerFired(data):
@@ -91,8 +97,8 @@ def run(width=300, height=300):
         redrawAll(canvas, data)
         canvas.update()
 
-    def mousePressedWrapper(event, canvas, data):
-        mousePressed(event, data)
+    def mousePressedWrapper(event, canvas, data, log):
+        mousePressed(event, data, log)
         redrawAllWrapper(canvas, data)
 
     def keyPressedWrapper(event, canvas, data, entry, log):
@@ -115,31 +121,42 @@ def run(width=300, height=300):
     entry = Entry(root)
     entryWidth = data.width // 10
     entry.config(width = entryWidth)
-    entry.pack(side = BOTTOM)
+    entry.grid(row = 2, columnspan = 6)
     
     scrollBar = Scrollbar(root)
     
+
     logWidth = data.width // 8
     logHeight = data.height // 100
     log = Text(root, width = logWidth, height = logHeight, yscrollcommand = scrollBar.set, state = DISABLED)
     scrollBar.config(command=log.yview)
     
-    log.pack(side = BOTTOM)
-   # log.pack(side = LEFT)
-    scrollBar.pack(side = RIGHT, fill = Y)
+    log.grid(row = 1, columnspan = 7)
+    scrollBar.grid(row = 1, column = 7)
     
-    root.resizable(width=True, height=True) # prevents resizing window
+    root.resizable(width=False, height=False) # prevents resizing window
     init(data)
     # create the root and the canvas
     canvas = Canvas(root, width=data.width, height=data.height)
     canvas.configure(bd=0, highlightthickness=0)
-    canvas.pack()
+    canvas.grid(row = 0, columnspan = 8)
     # set up events
     root.bind("<Button-1>", lambda event:
-                            mousePressedWrapper(event, canvas, data))
+                            mousePressedWrapper(event, canvas, data, log))
     root.bind("<Key>", lambda event:
                             keyPressedWrapper(event, canvas, data, entry, log))
+
     timerFiredWrapper(canvas, data)
+    def buttonCallback():
+        sendMsg(data, log, entry)
+        
+    def sendMsg(data, log, entry):
+        if len(entry.get()) > 0:
+            data.userEntry = entry.get()
+            processMessage(data, log, entry)
+            
+    button = Button(root, text = "Send", command = buttonCallback)
+    button.grid(row = 2, column = 6)
     # and launch the app
     root.mainloop()  # blocks until window is closed
     print("bye!")
