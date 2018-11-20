@@ -55,9 +55,16 @@ def yesNoQuestion(data):
 
 # user message is a question requiring a specific answer
 def specificQuestion(data):
-    firstWord = data.userEntry.split()[0]
-    secondWord = data.userEntry.split()[1]
-    thirdWord = data.userEntry.split()[2]
+    firstWord = ""
+    secondWord = ""
+    thirdWord = ""
+    for i in range(len(data.userEntry.split())):
+        if i == 0:
+            firstWord = data.userEntry.split()[0]
+        elif i == 1:
+            secondWord = data.userEntry.split()[1]
+        elif i == 2:
+            thirdWord = data.userEntry.split()[2]
     if thirdWord[-1] == "?":
         thirdWord = thirdWord[:-1]
     
@@ -76,7 +83,6 @@ def specificQuestion(data):
                 data.chatResponse = "%s %s %s" % (thirdWord, secondWord, random.choice(adjectives))
         else:
             data.chatResponse = random.choice(responses)
-        
 
 # user said a greeting
 def greeting(data):
