@@ -5,6 +5,7 @@ Understanding .pack(): http://effbot.org/tkinterbook/pack.htm
 Text Tutorials: https://www.tutorialspoint.com/python/tk_text.htm http://effbot.org/tkinterbook/text.htm
 Grid Tutorial: http://effbot.org/tkinterbook/grid.htm
 Button Tutorial: http://effbot.org/tkinterbook/button.htm
+Events and Binding Tutorial: http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
 """
 
 from tkinter import *
@@ -22,11 +23,11 @@ def init(data):
 
 # if the mouse is pressed, bot should say ouch (some binding problems)
 def mousePressed(event, data, log):
-    # if event.y < data.height * 6 / 10:
-    #     log.config(state = NORMAL)
-    #     log.insert(END, "\n" + "ouch!")
-    #     log.yview_pickplace(END)
-    #     log.config(state = DISABLED)
+    if event.y < data.height:
+        log.config(state = NORMAL)
+        log.insert(END, "\n" + "ouch!")
+        log.yview_pickplace(END)
+        log.config(state = DISABLED)
     pass
 
 # holds the current different message types
@@ -89,8 +90,11 @@ def processMessage(data, log, entry):
     log.config(state = DISABLED)
     print(data.chatLog)
 
-# when return key is pressed, submit message
 def keyPressed(event, data, entry, log):
+    pass
+    
+# when return key is pressed, submit message
+def entryKeyPressed(event, data, entry, log):
     entryLog = entry.get()
     if event.keysym == "Return" and len(entryLog) > 0:
         data.userEntry = entryLog
@@ -144,6 +148,7 @@ def run(width=300, height=300):
         redrawAllWrapper(canvas, data)
         # pause, then call timerFired again
         canvas.after(data.timerDelay, timerFiredWrapper, canvas, data)
+        
     # Set up data and call init
     class Struct(object): pass
     data = Struct()
@@ -175,12 +180,12 @@ def run(width=300, height=300):
     canvas = Canvas(root, width=data.width, height=data.height)
     canvas.configure(bd=0, highlightthickness=0)
     canvas.grid(row = 0, columnspan = 8)
-    # set up events
-    root.bind("<Button-1>", lambda event:
+    # set up events, specify per widget type
+    canvas.bind("<Button-1>", lambda event:
                             mousePressedWrapper(event, canvas, data, log))
-    root.bind("<Key>", lambda event:
+    canvas.bind("<Key>", lambda event:
                             keyPressedWrapper(event, canvas, data, entry, log))
-
+    entry.bind("<Key>", lambda event: entryKeyPressed(event, data, entry, log))
     timerFiredWrapper(canvas, data)
     
     # handles button click
