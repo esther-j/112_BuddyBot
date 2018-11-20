@@ -55,32 +55,29 @@ def yesNoQuestion(data):
 
 # user message is a question requiring a specific answer
 def specificQuestion(data):
-    firstWord = ""
-    secondWord = ""
-    thirdWord = ""
+    words = [""] * 4
     for i in range(len(data.userEntry.split())):
-        if i == 0:
-            firstWord = data.userEntry.split()[0]
-        elif i == 1:
-            secondWord = data.userEntry.split()[1]
-        elif i == 2:
-            thirdWord = data.userEntry.split()[2]
-    if thirdWord[-1] == "?":
-        thirdWord = thirdWord[:-1]
-    
+        if i < 4: 
+            words[i] = data.userEntry.split()[i]
+    for i in range(len(words)):
+        if words[i][-1] == "?":
+            words[i] = words[i][:-1]
     startKey = ["why", "how", "who", "what", "when", "where"]
     responses = ["what do you think?", "good question", "not sure"]
+    definingWord = ["the", "a", "your", "my"]
     adjectives = ["funny", "happy", "weird", "cool", "fuzzy", "orange"]
     
     # parse through question words, looking for keywords
-    if firstWord in startKey:
+    if words[0] in startKey:
         # see if an object is being asked about
-        if secondWord in ["is", "are"]:
+        if words[1] in ["is", "are"]:
             # see if bot is being talked about
-            if thirdWord == "you":
+            if words[2] == "you":
                 data.chatResponse = "I am " + random.choice(adjectives)
+            elif words[2] in definingWord:
+                data.chatResponse = "%s %s %s %s" % (words[2], words[3], words[1], random.choice(adjectives))
             else:
-                data.chatResponse = "%s %s %s" % (thirdWord, secondWord, random.choice(adjectives))
+                data.chatResponse = "%s %s %s" % (words[2], words[1], random.choice(adjectives))
         else:
             data.chatResponse = random.choice(responses)
 
@@ -99,7 +96,8 @@ def farewell(data):
 # chat responds to user entry
 def chatBotResponse(data, log):
     data.userEntry.lower().strip()
-    data.chatResponse = "ok"
+    typicalResponse = ["ok", "nice", "sounds interesting"]
+    data.chatResponse = random.choice(typicalResponse)
     messageType(data)
     log.insert(END, "\n" + data.chatResponse)
 
@@ -139,25 +137,25 @@ def entryKeyPressed(event, data, entry, log):
 
 # timer fire -> necessary for typical bot movement
 def timerFired(data, log):
-    # Open camera and initialize the face cascade
-    capture = cv2.VideoCapture(0)
-    faceCascade = cv2.CascadeClassifier("/Users/estherjang/Desktop/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
-    
-    ret, frame = capture.read()
-    
-    # Find face and draw box in blue
-    faces = faceCascade.detectMultiScale(frame, 1.3, 5)
-    # checks if a face has been found
-    if len(faces) != 0:
-        data.foundFace = True
-        processFace(data, log)
-    for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y),(x + w, y + h), (255, 0, 0), 2)            
-            
-    # Make window and show frames
-    cv2.imshow("Face Detection", frame)
-    # Do this every 10 ms
-    cv2.waitKey(10)
+    # # Open camera and initialize the face cascade
+    # capture = cv2.VideoCapture(0)
+    # faceCascade = cv2.CascadeClassifier("/Users/estherjang/Desktop/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
+    # 
+    # ret, frame = capture.read()
+    # 
+    # # Find face and draw box in blue
+    # faces = faceCascade.detectMultiScale(frame, 1.3, 5)
+    # # checks if a face has been found
+    # if len(faces) != 0:
+    #     data.foundFace = True
+    #     processFace(data, log)
+    # for (x, y, w, h) in faces:
+    #     cv2.rectangle(frame, (x, y),(x + w, y + h), (255, 0, 0), 2)            
+    #         
+    # # Make window and show frames
+    # cv2.imshow("Face Detection", frame)
+    # # Do this every 10 ms
+    # cv2.waitKey(10)
     pass
 
 # draw bot in canvas
@@ -166,6 +164,7 @@ def redrawAll(canvas, data):
     pixelLen = data.width / 30
     drawEyes(canvas, data, pixelLen)
     drawMouth(canvas, data, pixelLen)
+    drawSettings(canvas, data)
 
 # draws the bot's eyes
 def drawEyes(canvas, data, pixelLen):
@@ -178,7 +177,17 @@ def drawMouth(canvas, data, pixelLen):
     canvas.create_rectangle(data.width / 3, data.height / 3 + (pixelLen * 3), data.width * 2 / 3, data.height / 3 + (pixelLen * 4), fill = "black")
     canvas.create_rectangle(data.width / 3 - pixelLen, data.height / 3 + (pixelLen * 2), data.width / 3, data.height / 3 + (pixelLen * 3), fill = "black")
     canvas.create_rectangle(data.width * 2 / 3, data.height / 3 + (pixelLen * 2), data.width * 2 / 3 + pixelLen, data.height / 3 + (pixelLen * 3), fill = "black")
-    
+
+def drawSettings(canvas, data):
+    lineLen = data.width / 25
+    lineHeight = data.width / 120
+    leftCor = data.width / 40
+    for i in range(3):
+        canvas.create_rectangle(leftCor, leftCor + 2 * i * lineHeight, leftCor + lineLen, leftCor + lineHeight + 2 * i * lineHeight, fill = "dark grey")
+def sendMsg(data, log, entry):
+    if len(entry.get()) > 0:
+        data.userEntry = entry.get()
+        processMessage(data, log, entry)
 ####################################
 # use the run function as-is
 ####################################
@@ -230,7 +239,7 @@ def run(width=300, height=300):
     scrollBar.config(command=log.yview)
     log.grid(row = 1, columnspan = 7)
     scrollBar.grid(row = 1, column = 7)
-    
+     
     root.resizable(width=False, height=False) # prevents resizing window
     init(data)
     # create the root and the canvas
@@ -249,17 +258,11 @@ def run(width=300, height=300):
     def buttonCallback():
         sendMsg(data, log, entry)
     
-    def sendMsg(data, log, entry):
-        if len(entry.get()) > 0:
-            data.userEntry = entry.get()
-            processMessage(data, log, entry)
-    
     # sets up button to send message
     button = Button(root, text = "Send", command = buttonCallback)
     button.grid(row = 2, column = 6)
     # and launch the app
     root.mainloop()  # blocks until window is closed
-    print("bye!")
     capture.release()
     cv2.destroyAllWindows()
 
