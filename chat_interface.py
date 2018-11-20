@@ -14,13 +14,13 @@ import random
 # customize these functions
 ####################################
 
+# initalizes the chat data
 def init(data):
-    # load data.xyz as appropriate
     data.chatLog = []
     data.userEntry = ""
     data.chatResponse = ""
-    pass
 
+# if the mouse is pressed, bot should say ouch (some binding problems)
 def mousePressed(event, data, log):
     # if event.y < data.height * 6 / 10:
     #     log.config(state = NORMAL)
@@ -29,23 +29,56 @@ def mousePressed(event, data, log):
     #     log.config(state = DISABLED)
     pass
 
-def chatBotResponse(data, log):
-    data.userEntry.lower().strip()
-    data.chatResponse = "ok"
+# holds the current different message types
+def messageType(data):
     greeting(data)
     question(data)
-    log.insert(END, "\n" + data.chatResponse)
-
+    farewell(data)
+    
+# user message is a question
 def question(data):
     answers = ["I don't know", "no", "yes"]
     if data.userEntry[-1] == "?":
         data.chatResponse = random.choice(answers)
+        yesNoQuestion(data)
+        specificQuestion(data)
 
+# user message is a yes/no question
+def yesNoQuestion(data):
+    firstWord = data.userEntry.split()[0]
+    startKey = ["should", "could", "is", "are"]
+    responses = ["yes", "no", "I don't know", ]
+    if firstWord in startKey:
+        data.chatResponse = random.choice(responses)
+
+# user message is a question requiring a specific answer
+def specificQuestion(data):
+    firstWord = data.userEntry.split()[0]
+    startKey = ["why", "how", "who", "what", "when", "where"]
+    responses = ["what do you think?", "good question", "not sure"]
+    if firstWord in startKey:
+        data.chatResponse = random.choice(responses)
+
+# user said a greeting
 def greeting(data):
-    greetings = ["hello", "hi", "hallo", "hai", "hey"]
+    greetings = ["hello", "hi", "hallo", "hai", "hey", "sup"]
     if data.userEntry in greetings:
         data.chatResponse = random.choice(greetings)
 
+# user said a farewell
+def farewell(data):
+    farewells = ["bye", "good bye", "see ya"]
+    if data.userEntry in farewells:
+        data.chatResponse = random.choice(farewells)
+
+# chat responds to user entry
+def chatBotResponse(data, log):
+    data.userEntry.lower().strip()
+    data.chatResponse = "ok"
+    messageType(data)
+    log.insert(END, "\n" + data.chatResponse)
+
+# chatbot processes the message said by user
 def processMessage(data, log, entry):
     entry.delete(0, END)
     data.chatLog.append(data.userEntry)
@@ -56,30 +89,31 @@ def processMessage(data, log, entry):
     log.config(state = DISABLED)
     print(data.chatLog)
 
+# when return key is pressed, submit message
 def keyPressed(event, data, entry, log):
     entryLog = entry.get()
     if event.keysym == "Return" and len(entryLog) > 0:
         data.userEntry = entryLog
         processMessage(data, log, entry)
-    # use event.char and event.keysym
 
+# timer fire -> necessary for typical bot movement
 def timerFired(data):
-    # userInput = entry.get()
-    # print(userInput)
     pass
 
+# draw bot in canvas
 def redrawAll(canvas, data):
-    # draw in canvas
     canvas.create_rectangle(0, 0, data.width, data.height, fill = "sky blue", width = 0)
     pixelLen = data.width / 30
     drawEyes(canvas, data, pixelLen)
     drawMouth(canvas, data, pixelLen)
-    
+
+# draws the bot's eyes
 def drawEyes(canvas, data, pixelLen):
     halfPixel = pixelLen / 2
     canvas.create_rectangle(data.width / 4 - halfPixel, data.height / 3 - halfPixel, data.width / 4 + halfPixel, data.height / 3 + halfPixel, fill = "black")
     canvas.create_rectangle(data.width * (3 / 4) - halfPixel, data.height / 3 - halfPixel, data.width * (3 / 4) + halfPixel, data.height / 3 + halfPixel, fill = "black")
-    
+
+# draws the bot's mouth
 def drawMouth(canvas, data, pixelLen):
     canvas.create_rectangle(data.width / 3, data.height / 3 + (pixelLen * 3), data.width * 2 / 3, data.height / 3 + (pixelLen * 4), fill = "black")
     canvas.create_rectangle(data.width / 3 - pixelLen, data.height / 3 + (pixelLen * 2), data.width / 3, data.height / 3 + (pixelLen * 3), fill = "black")
@@ -118,19 +152,20 @@ def run(width=300, height=300):
     data.timerDelay = 100 # milliseconds
     root = Tk()
     
+    # sets up entry box for user message
     entry = Entry(root)
     entryWidth = data.width // 10
     entry.config(width = entryWidth)
     entry.grid(row = 2, columnspan = 6)
     
+    # sets up scroll bar for the text log
     scrollBar = Scrollbar(root)
-    
 
+    # sets up the text log
     logWidth = data.width // 8
     logHeight = data.height // 100
     log = Text(root, width = logWidth, height = logHeight, yscrollcommand = scrollBar.set, state = DISABLED)
     scrollBar.config(command=log.yview)
-    
     log.grid(row = 1, columnspan = 7)
     scrollBar.grid(row = 1, column = 7)
     
@@ -147,14 +182,17 @@ def run(width=300, height=300):
                             keyPressedWrapper(event, canvas, data, entry, log))
 
     timerFiredWrapper(canvas, data)
+    
+    # handles button click
     def buttonCallback():
         sendMsg(data, log, entry)
-        
+    
     def sendMsg(data, log, entry):
         if len(entry.get()) > 0:
             data.userEntry = entry.get()
             processMessage(data, log, entry)
-            
+    
+    # sets up button to send message
     button = Button(root, text = "Send", command = buttonCallback)
     button.grid(row = 2, column = 6)
     # and launch the app
