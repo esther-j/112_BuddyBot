@@ -10,25 +10,26 @@ Events and Binding Tutorial: http://effbot.org/tkinterbook/tkinter-events-and-bi
 
 from tkinter import *
 import random
+import cv2
+import numpy as np
 
 ####################################
 # customize these functions
 ####################################
-
 # initalizes the chat data
 def init(data):
     data.chatLog = []
     data.userEntry = ""
     data.chatResponse = ""
+    data.foundFace = False
+    data.foundFirstFace = False
 
 # if the mouse is pressed, bot should say ouch (some binding problems)
 def mousePressed(event, data, log):
-    if event.y < data.height:
-        log.config(state = NORMAL)
-        log.insert(END, "\n" + "ouch!")
-        log.yview_pickplace(END)
-        log.config(state = DISABLED)
-    pass
+    log.config(state = NORMAL)
+    log.insert(END, "\n" + "ouch!")
+    log.yview_pickplace(END)
+    log.config(state = DISABLED)
 
 # holds the current different message types
 def messageType(data):
@@ -55,10 +56,27 @@ def yesNoQuestion(data):
 # user message is a question requiring a specific answer
 def specificQuestion(data):
     firstWord = data.userEntry.split()[0]
+    secondWord = data.userEntry.split()[1]
+    thirdWord = data.userEntry.split()[2]
+    if thirdWord[-1] == "?":
+        thirdWord = thirdWord[:-1]
+    
     startKey = ["why", "how", "who", "what", "when", "where"]
     responses = ["what do you think?", "good question", "not sure"]
+    adjectives = ["funny", "happy", "weird", "cool", "fuzzy", "orange"]
+    
+    # parse through question words, looking for keywords
     if firstWord in startKey:
-        data.chatResponse = random.choice(responses)
+        # see if an object is being asked about
+        if secondWord in ["is", "are"]:
+            # see if bot is being talked about
+            if thirdWord == "you":
+                data.chatResponse = "I am " + random.choice(adjectives)
+            else:
+                data.chatResponse = "%s %s %s" % (thirdWord, secondWord, random.choice(adjectives))
+        else:
+            data.chatResponse = random.choice(responses)
+        
 
 # user said a greeting
 def greeting(data):
@@ -90,6 +108,19 @@ def processMessage(data, log, entry):
     log.config(state = DISABLED)
     print(data.chatLog)
 
+# chatbot processes that it has found a face
+def processFace(data, log):
+    faceDetection = "I found your face!"
+    log.config(state = NORMAL)
+    if data.foundFace and not data.foundFirstFace:
+        data.chatLog.append(faceDetection)
+        data.foundFirstFace = True
+        log.insert(END, "\n" + faceDetection)    
+    log.yview_pickplace(END)
+    log.config(state = DISABLED)
+    print(data.chatLog)
+        
+# key press for canvas - currently inactive
 def keyPressed(event, data, entry, log):
     pass
     
@@ -101,7 +132,26 @@ def entryKeyPressed(event, data, entry, log):
         processMessage(data, log, entry)
 
 # timer fire -> necessary for typical bot movement
-def timerFired(data):
+def timerFired(data, log):
+    # Open camera and initialize the face cascade
+    capture = cv2.VideoCapture(0)
+    faceCascade = cv2.CascadeClassifier("/Users/estherjang/Desktop/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
+    
+    ret, frame = capture.read()
+    
+    # Find face and draw box in blue
+    faces = faceCascade.detectMultiScale(frame, 1.3, 5)
+    # checks if a face has been found
+    if len(faces) != 0:
+        data.foundFace = True
+        processFace(data, log)
+    for (x, y, w, h) in faces:
+        cv2.rectangle(frame, (x, y),(x + w, y + h), (255, 0, 0), 2)            
+            
+    # Make window and show frames
+    cv2.imshow("Face Detection", frame)
+    # Do this every 10 ms
+    cv2.waitKey(10)
     pass
 
 # draw bot in canvas
@@ -143,18 +193,19 @@ def run(width=300, height=300):
         keyPressed(event, data, entry, log)
         redrawAllWrapper(canvas, data)
 
-    def timerFiredWrapper(canvas, data):
-        timerFired(data)
+    def timerFiredWrapper(canvas, data, log):
+        timerFired(data, log)
         redrawAllWrapper(canvas, data)
         # pause, then call timerFired again
-        canvas.after(data.timerDelay, timerFiredWrapper, canvas, data)
-        
+        canvas.after(data.timerDelay, timerFiredWrapper, canvas, data, log)
+    capture = cv2.VideoCapture(0)
+    faceCascade = cv2.CascadeClassifier("/Users/estherjang/Desktop/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
     # Set up data and call init
     class Struct(object): pass
     data = Struct()
     data.width = width
     data.height = height
-    data.timerDelay = 100 # milliseconds
+    data.timerDelay = 10 # milliseconds
     root = Tk()
     
     # sets up entry box for user message
@@ -186,7 +237,7 @@ def run(width=300, height=300):
     canvas.bind("<Key>", lambda event:
                             keyPressedWrapper(event, canvas, data, entry, log))
     entry.bind("<Key>", lambda event: entryKeyPressed(event, data, entry, log))
-    timerFiredWrapper(canvas, data)
+    timerFiredWrapper(canvas, data, log)
     
     # handles button click
     def buttonCallback():
@@ -203,5 +254,7 @@ def run(width=300, height=300):
     # and launch the app
     root.mainloop()  # blocks until window is closed
     print("bye!")
+    capture.release()
+    cv2.destroyAllWindows()
 
 run(800, 500)
