@@ -3,9 +3,15 @@
 Entry Box Tutorial: http://effbot.org/tkinterbook/entry.htm
 Understanding .pack(): http://effbot.org/tkinterbook/pack.htm
 Text Tutorials: https://www.tutorialspoint.com/python/tk_text.htm http://effbot.org/tkinterbook/text.htm
+ScrollBat Tutorial: http://effbot.org/zone/tkinter-scrollbar-patterns.htm
 Grid Tutorial: http://effbot.org/tkinterbook/grid.htm
 Button Tutorial: http://effbot.org/tkinterbook/button.htm
 Events and Binding Tutorial: http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
+"""
+
+"""Credits for openCV tutorials:
+Live camera capture: https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html#display-video
+Face detection: https://docs.opencv.org/3.4.3/d7/d8b/tutorial_py_face_detection.html
 """
 
 from tkinter import *
@@ -60,8 +66,9 @@ def specificQuestion(data):
         if i < 4: 
             words[i] = data.userEntry.split()[i]
     for i in range(len(words)):
-        if words[i][-1] == "?":
-            words[i] = words[i][:-1]
+        if len(words[i]) > 0:
+            if words[i][-1] == "?":
+                words[i] = words[i][:-1]
     startKey = ["why", "how", "who", "what", "when", "where"]
     responses = ["what do you think?", "good question", "not sure"]
     definingWord = ["the", "a", "your", "my"]
@@ -137,25 +144,23 @@ def entryKeyPressed(event, data, entry, log):
 
 # timer fire -> necessary for typical bot movement
 def timerFired(data, log):
-    # # Open camera and initialize the face cascade
-    # capture = cv2.VideoCapture(0)
-    # faceCascade = cv2.CascadeClassifier("/Users/estherjang/Desktop/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
-    # 
-    # ret, frame = capture.read()
-    # 
-    # # Find face and draw box in blue
-    # faces = faceCascade.detectMultiScale(frame, 1.3, 5)
-    # # checks if a face has been found
-    # if len(faces) != 0:
-    #     data.foundFace = True
-    #     processFace(data, log)
-    # for (x, y, w, h) in faces:
-    #     cv2.rectangle(frame, (x, y),(x + w, y + h), (255, 0, 0), 2)            
-    #         
-    # # Make window and show frames
-    # cv2.imshow("Face Detection", frame)
-    # # Do this every 10 ms
-    # cv2.waitKey(10)
+    # Open camera and initialize the face cascade
+    capture = cv2.VideoCapture(0)
+    faceCascade = cv2.CascadeClassifier("/Users/estherjang/Documents/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
+    
+    ret, frame = capture.read()
+    
+    # Find face and draw box in blue
+    faces = faceCascade.detectMultiScale(frame, 1.3, 5)
+    # checks if a face has been found
+    if len(faces) != 0:
+        data.foundFace = True
+        processFace(data, log)
+    for (x, y, w, h) in faces:
+        cv2.rectangle(frame, (x, y),(x + w, y + h), (255, 0, 0), 2)            
+            
+    # Make window and show frames
+    cv2.imshow("Face Detection", frame)
     pass
 
 # draw bot in canvas
@@ -178,16 +183,19 @@ def drawMouth(canvas, data, pixelLen):
     canvas.create_rectangle(data.width / 3 - pixelLen, data.height / 3 + (pixelLen * 2), data.width / 3, data.height / 3 + (pixelLen * 3), fill = "black")
     canvas.create_rectangle(data.width * 2 / 3, data.height / 3 + (pixelLen * 2), data.width * 2 / 3 + pixelLen, data.height / 3 + (pixelLen * 3), fill = "black")
 
+# draws settings
 def drawSettings(canvas, data):
     lineLen = data.width / 25
     lineHeight = data.width / 120
     leftCor = data.width / 40
     for i in range(3):
-        canvas.create_rectangle(leftCor, leftCor + 2 * i * lineHeight, leftCor + lineLen, leftCor + lineHeight + 2 * i * lineHeight, fill = "dark grey")
+        canvas.create_rectangle(leftCor, leftCor + 2 * i * lineHeight, leftCor + lineLen, leftCor + lineHeight + 2 * i * lineHeight, fill = "dark grey", width = 0)
+        
 def sendMsg(data, log, entry):
     if len(entry.get()) > 0:
         data.userEntry = entry.get()
         processMessage(data, log, entry)
+        
 ####################################
 # use the run function as-is
 ####################################
@@ -213,6 +221,7 @@ def run(width=300, height=300):
         redrawAllWrapper(canvas, data)
         # pause, then call timerFired again
         canvas.after(data.timerDelay, timerFiredWrapper, canvas, data, log)
+        
     capture = cv2.VideoCapture(0)
     faceCascade = cv2.CascadeClassifier("/Users/estherjang/Desktop/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
     # Set up data and call init
