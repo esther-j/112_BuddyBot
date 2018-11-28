@@ -88,44 +88,24 @@ def entryKeyPressed(event, data, entry, log):
         data.userEntry = entryLog
         processMessage(data, log, entry)
 
-# foundEmotions = []
-# # set up the emotions
-# emotions = ["happy", "neutral", "sad", "angry", "surprised"]
-# # create emotion detector object
-# emotionDetector = cv2.face.FisherFaceRecognizer_create() 
-# # train the emotion detector
-# trainEmotionDetector()
-# # turn on camera
-# cap = cv2.VideoCapture(0)
-
-
 # timer fire -> necessary for typical bot movement
 def timerFired(data, log):
     getEmotion()
-    print(foundEmotions)
+    # writes an overall emotion for every 10 emotions
     if len(foundEmotions) == 10:
         overallEmotion = predictOverallEmotion(foundEmotions)
+        data.overallEmotions.append(overallEmotion)
         del foundEmotions[:]
-        # display the emotion information
-        print("Most likely feeling", overallEmotion)
-    # # Open camera and initialize the face cascade
-    # capture = cv2.VideoCapture(0)
-    # faceCascade = cv2.CascadeClassifier("/Users/estherjang/Documents/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
-    # 
-    # ret, frame = capture.read()
-    # 
-    # # Find face and draw box in blue
-    # faces = faceCascade.detectMultiScale(frame, 1.3, 5)
-    # # checks if a face has been found
-    # if len(faces) != 0:
-    #     data.foundFace = True
-    #     processFace(data, log)
-    # for (x, y, w, h) in faces:
-    #     cv2.rectangle(frame, (x, y),(x + w, y + h), (255, 0, 0), 2)            
-    #         
-    # # Make window and show frames
-    # cv2.imshow("Face Detection", frame)
-    # pass
+    # when 10 overall emotions are found, check up on user
+    if len(data.overallEmotions) == 10:
+        mainEmotion = predictOverallEmotion(data.overallEmotions)
+        log.config(state = NORMAL)
+        log.insert(END, "\n" + "you seem %s recently. what's up?" % mainEmotion)
+        data.overallEmotions = []
+        log.yview_pickplace(END)
+        log.config(state = DISABLED)
+    print("all emotions", data.overallEmotions)
+        
 
 # draw bot in canvas
 def redrawAll(canvas, data):

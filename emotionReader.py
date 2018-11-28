@@ -76,6 +76,7 @@ def predictOverallEmotion(lst):
 
 def getEmotion():
     # print(foundEmotions)
+    overallEmotion = ""
     ret, frame = cap.read()
     # looks for face + creates image of it if face is found
     foundFaceInfo = findFace(frame)
@@ -89,11 +90,11 @@ def getEmotion():
         pred, conf = emotionDetector.predict(gray)
         emotion = emotions[pred]
         foundEmotions.append(emotion)
-        if len(foundEmotions) == 10:
-            overallEmotion = predictOverallEmotion(foundEmotions)
-            del foundEmotions[:]
-            # display the emotion information
-            print("Most likely feeling", overallEmotion)
+        # if len(foundEmotions) == 10:
+        #     overallEmotion = predictOverallEmotion(foundEmotions)
+        #     del foundEmotions[:]
+        #     # display the emotion information
+        #     print("Most likely feeling", overallEmotion)
         displayInformation(frame, faceCoords, emotion)
         cv2.imshow("Emotion Detector", frame)
     #    cv2.waitKey(100) 
@@ -106,7 +107,8 @@ def getEmotion():
         cv2.imshow("Emotion Detector", frame)
     #    cv2.waitKey(100)
         return None
-        
+
+overallEmotion = ""
 foundEmotions = []
 # set up the emotions
 emotions = ["happy", "neutral", "sad", "angry", "surprised"]
