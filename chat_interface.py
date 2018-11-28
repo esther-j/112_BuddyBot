@@ -9,11 +9,6 @@ Button Tutorial: http://effbot.org/tkinterbook/button.htm
 Events and Binding Tutorial: http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
 """
 
-"""Credits for openCV tutorials:
-Live camera capture: https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html#display-video
-Face detection: https://docs.opencv.org/3.4.3/d7/d8b/tutorial_py_face_detection.html
-"""
-
 from drawChatbot import *
 from emotionReader import *
 from chatbotAnswer import *
@@ -98,16 +93,41 @@ def timerFired(data, log):
         data.overallEmotions.append(overallEmotion)
         del foundEmotions[:]
     # when 10 overall emotions are found, check up on user
+    
     if len(data.overallEmotions) == 10:
         mainEmotion = predictOverallEmotion(data.overallEmotions)
         log.config(state = NORMAL)
-        log.insert(END, "\n" + "you seem %s recently. what's up?" % mainEmotion)
+        respondToEmotion(mainEmotion, log)
         data.overallEmotions = []
         log.yview_pickplace(END)
         log.config(state = DISABLED)
     print("all emotions", data.overallEmotions)
-        
 
+# respond to different emotions
+def respondToEmotion(emotion, log):
+    msg = ""
+    if emotion == "happy":
+        happyResponses = ["I'm glad you're happy! That makes me happy too :)",
+                        "Did something exciting happen? You seem happy!",
+                        "Seeing you smile makes me smile too :)",
+                        "You seem happy recently, by the way. Yay!"]
+        msg = random.choice(happyResponses)
+    elif emotion == "sad":
+        sadResponses = ["You seem sad recently. What's up?",
+                        "What's making you feel down, by the way?",
+                        "I noticed that you seem sad. Want to talk about it?"]
+        msg = random.choice(sadResponses)
+    elif emotion == "angry":
+        angryResponses = ["Ah! You seem kind of angry recently",
+                        "You seem upset. What's wrong?"]
+        msg = random.choice(angryResponses)
+    elif emotion == "surprise":
+        surpriseResponses = ["Did something happen? Why do you seem surprised?"
+                            "What's new? You look surprised"]
+        msg = random.choice(surpriseResponses)
+    if len(msg) != 0:
+        log.insert(END, "\n" + msg)
+        
 # draw bot in canvas
 def redrawAll(canvas, data):
     canvas.create_rectangle(0, 0, data.width, data.height, fill = "sky blue", width = 0)

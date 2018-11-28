@@ -4,6 +4,12 @@ Credit: Adapted code from http://www.paulvangent.com/2016/04/01/emotion-recognit
 Official citation:
 van Gent, P. (2016). Emotion Recognition With Python, OpenCV and a Face Dataset. A tech blog about fun things with Python and embedded electronics. Retrieved from:
 http://www.paulvangent.com/2016/04/01/emotion-recognition-with-python-opencv-and-a-face-dataset/
+
+Credit: Learned similar concepts from https://www.superdatascience.com/opencv-face-recognition/
+
+Credits for openCV tutorials:
+Live camera capture: https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html#display-video
+Face detection: https://docs.opencv.org/3.4.3/d7/d8b/tutorial_py_face_detection.html
 """
 import cv2
 import random
@@ -102,10 +108,12 @@ def getEmotion():
         
 foundEmotions = []
 # set up the emotions
-emotions = ["happy", "neutral", "sad", "angry", "surprised"]
+emotions = ["happy", "sad", "neutral", "angry", "surprised"]
+#removed neutral
+
 # create emotion detector object
 emotionDetector = cv2.face.FisherFaceRecognizer_create() 
 # train the emotion detector
-trainEmotionDetector()
+# trainEmotionDetector()
 # turn on camera
 cap = cv2.VideoCapture(0)
