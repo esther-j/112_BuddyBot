@@ -14,6 +14,8 @@ Live camera capture: https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py
 Face detection: https://docs.opencv.org/3.4.3/d7/d8b/tutorial_py_face_detection.html
 """
 
+from emotionReader import *
+from chatbotAnswer import *
 from tkinter import *
 import random
 import cv2
@@ -25,6 +27,7 @@ import numpy as np
 # initalizes the chat data
 def init(data):
     data.chatLog = []
+    data.overallEmotions = []
     data.userEntry = ""
     data.chatResponse = ""
     data.foundFace = False
@@ -42,63 +45,6 @@ def messageType(data):
     greeting(data)
     question(data)
     farewell(data)
-    
-# user message is a question
-def question(data):
-    answers = ["I don't know", "no", "yes"]
-    if data.userEntry[-1] == "?":
-        data.chatResponse = random.choice(answers)
-        yesNoQuestion(data)
-        specificQuestion(data)
-
-# user message is a yes/no question
-def yesNoQuestion(data):
-    firstWord = data.userEntry.split()[0]
-    startKey = ["should", "could", "is", "are"]
-    responses = ["yes", "no", "I don't know", ]
-    if firstWord in startKey:
-        data.chatResponse = random.choice(responses)
-
-# user message is a question requiring a specific answer
-def specificQuestion(data):
-    words = [""] * 4
-    for i in range(len(data.userEntry.split())):
-        if i < 4: 
-            words[i] = data.userEntry.split()[i]
-    for i in range(len(words)):
-        if len(words[i]) > 0:
-            if words[i][-1] == "?":
-                words[i] = words[i][:-1]
-    startKey = ["why", "how", "who", "what", "when", "where"]
-    responses = ["what do you think?", "good question", "not sure"]
-    definingWord = ["the", "a", "your", "my"]
-    adjectives = ["funny", "happy", "weird", "cool", "fuzzy", "orange"]
-    
-    # parse through question words, looking for keywords
-    if words[0] in startKey:
-        # see if an object is being asked about
-        if words[1] in ["is", "are"]:
-            # see if bot is being talked about
-            if words[2] == "you":
-                data.chatResponse = "I am " + random.choice(adjectives)
-            elif words[2] in definingWord:
-                data.chatResponse = "%s %s %s %s" % (words[2], words[3], words[1], random.choice(adjectives))
-            else:
-                data.chatResponse = "%s %s %s" % (words[2], words[1], random.choice(adjectives))
-        else:
-            data.chatResponse = random.choice(responses)
-
-# user said a greeting
-def greeting(data):
-    greetings = ["hello", "hi", "hallo", "hai", "hey", "sup"]
-    if data.userEntry in greetings:
-        data.chatResponse = random.choice(greetings)
-
-# user said a farewell
-def farewell(data):
-    farewells = ["bye", "good bye", "see ya"]
-    if data.userEntry in farewells:
-        data.chatResponse = random.choice(farewells)
 
 # chat responds to user entry
 def chatBotResponse(data, log):
@@ -142,26 +88,44 @@ def entryKeyPressed(event, data, entry, log):
         data.userEntry = entryLog
         processMessage(data, log, entry)
 
+# foundEmotions = []
+# # set up the emotions
+# emotions = ["happy", "neutral", "sad", "angry", "surprised"]
+# # create emotion detector object
+# emotionDetector = cv2.face.FisherFaceRecognizer_create() 
+# # train the emotion detector
+# trainEmotionDetector()
+# # turn on camera
+# cap = cv2.VideoCapture(0)
+
+
 # timer fire -> necessary for typical bot movement
 def timerFired(data, log):
-    # Open camera and initialize the face cascade
-    capture = cv2.VideoCapture(0)
-    faceCascade = cv2.CascadeClassifier("/Users/estherjang/Documents/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
-    
-    ret, frame = capture.read()
-    
-    # Find face and draw box in blue
-    faces = faceCascade.detectMultiScale(frame, 1.3, 5)
-    # checks if a face has been found
-    if len(faces) != 0:
-        data.foundFace = True
-        processFace(data, log)
-    for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y),(x + w, y + h), (255, 0, 0), 2)            
-            
-    # Make window and show frames
-    cv2.imshow("Face Detection", frame)
-    pass
+    getEmotion()
+    print(foundEmotions)
+    if len(foundEmotions) == 10:
+        overallEmotion = predictOverallEmotion(foundEmotions)
+        del foundEmotions[:]
+        # display the emotion information
+        print("Most likely feeling", overallEmotion)
+    # # Open camera and initialize the face cascade
+    # capture = cv2.VideoCapture(0)
+    # faceCascade = cv2.CascadeClassifier("/Users/estherjang/Documents/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
+    # 
+    # ret, frame = capture.read()
+    # 
+    # # Find face and draw box in blue
+    # faces = faceCascade.detectMultiScale(frame, 1.3, 5)
+    # # checks if a face has been found
+    # if len(faces) != 0:
+    #     data.foundFace = True
+    #     processFace(data, log)
+    # for (x, y, w, h) in faces:
+    #     cv2.rectangle(frame, (x, y),(x + w, y + h), (255, 0, 0), 2)            
+    #         
+    # # Make window and show frames
+    # cv2.imshow("Face Detection", frame)
+    # pass
 
 # draw bot in canvas
 def redrawAll(canvas, data):

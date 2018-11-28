@@ -16,7 +16,7 @@ classifier = cv2.CascadeClassifier("/Users/estherjang/Documents/opencv/data/haar
 # gets all the images from the dataset of a given emotion
 def getImages(emotion):
     allImages = []
-    path = "dataset/%s" % emotion
+    path = "/Users/estherjang/Desktop/dataset/%s" % emotion
     if os.path.isdir(path):
         for image in os.listdir(path):
             if image != (".DS_Store"):
@@ -64,16 +64,18 @@ def displayInformation(img, rectangle, emotion):
     cv2.rectangle(img, (x, y), (x + w, y + h), yellow, 2)
     cv2.putText(img, emotion, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1.5, yellow, 2)
 
-# set up the emotions
-emotions = ["happy", "sad", "angry", "surprised"]
-# create emotion detector object
-emotionDetector = cv2.face.FisherFaceRecognizer_create() 
-# train the emotion detector
-trainEmotionDetector()
-# turn on camera
-cap = cv2.VideoCapture(0)
+# finds the most commonly appeared emotion and returns that
+def predictOverallEmotion(lst):
+    mostCommonEmotion = ""
+    freqEmotion = 0
+    for emotion in emotions:
+        if lst.count(emotion) > freqEmotion:
+            mostCommonEmotion = emotion
+            freqEmotion = lst.count(emotion)
+    return mostCommonEmotion
 
-while (True):
+def getEmotion():
+    # print(foundEmotions)
     ret, frame = cap.read()
     # looks for face + creates image of it if face is found
     foundFaceInfo = findFace(frame)
@@ -86,16 +88,37 @@ while (True):
         # predict what emotion the current frame is holding
         pred, conf = emotionDetector.predict(gray)
         emotion = emotions[pred]
-        # display the emotion information
+        foundEmotions.append(emotion)
+        if len(foundEmotions) == 10:
+            overallEmotion = predictOverallEmotion(foundEmotions)
+            del foundEmotions[:]
+            # display the emotion information
+            print("Most likely feeling", overallEmotion)
         displayInformation(frame, faceCoords, emotion)
-        print(emotion)
         cv2.imshow("Emotion Detector", frame)
-        cv2.waitKey(100) 
+    #    cv2.waitKey(100) 
         # delete temporary image
         os.remove("tmpImg.jpg")
+        return emotion
     # if face is not found, then return information indicating that
     else:
-        cv2.putText(frame, "Don't see face", (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 2)
-        print("Don't see face")
+        cv2.putText(frame, "Don't see face", (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 2)
         cv2.imshow("Emotion Detector", frame)
-        cv2.waitKey(100)
+    #    cv2.waitKey(100)
+        return None
+        
+foundEmotions = []
+# set up the emotions
+emotions = ["happy", "neutral", "sad", "angry", "surprised"]
+# create emotion detector object
+emotionDetector = cv2.face.FisherFaceRecognizer_create() 
+# train the emotion detector
+trainEmotionDetector()
+# turn on camera
+cap = cv2.VideoCapture(0)
+# 
+# while (True):
+#     getEmotion(foundEmotions)
+#     
+# os.remove("tmpImg.jpg")
+    
