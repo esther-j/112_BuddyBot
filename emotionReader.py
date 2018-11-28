@@ -13,15 +13,6 @@ import time
 
 classifier = cv2.CascadeClassifier("/Users/estherjang/Documents/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
 
-foundEmotions = []
-# set up the emotions
-emotions = ["happy", "neutral", "sad", "angry", "surprised"]
-# create emotion detector object
-emotionDetector = cv2.face.FisherFaceRecognizer_create() 
-# train the emotion detector
-trainEmotionDetector()
-# turn on camera
-cap = cv2.VideoCapture(0)
 
 # gets all the images from the dataset of a given emotion
 def getImages(emotion):
@@ -108,3 +99,13 @@ def getEmotion():
         cv2.putText(frame, "Don't see face", (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 2)
         cv2.imshow("Emotion Detector", frame)
         return None
+        
+foundEmotions = []
+# set up the emotions
+emotions = ["happy", "neutral", "sad", "angry", "surprised"]
+# create emotion detector object
+emotionDetector = cv2.face.FisherFaceRecognizer_create() 
+# train the emotion detector
+trainEmotionDetector()
+# turn on camera
+cap = cv2.VideoCapture(0)

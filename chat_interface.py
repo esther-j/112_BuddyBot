@@ -14,6 +14,7 @@ Live camera capture: https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py
 Face detection: https://docs.opencv.org/3.4.3/d7/d8b/tutorial_py_face_detection.html
 """
 
+from drawChatbot import *
 from emotionReader import *
 from chatbotAnswer import *
 from tkinter import *
@@ -114,26 +115,6 @@ def redrawAll(canvas, data):
     drawEyes(canvas, data, pixelLen)
     drawMouth(canvas, data, pixelLen)
     drawSettings(canvas, data)
-
-# draws the bot's eyes
-def drawEyes(canvas, data, pixelLen):
-    halfPixel = pixelLen / 2
-    canvas.create_rectangle(data.width / 4 - halfPixel, data.height / 3 - halfPixel, data.width / 4 + halfPixel, data.height / 3 + halfPixel, fill = "black")
-    canvas.create_rectangle(data.width * (3 / 4) - halfPixel, data.height / 3 - halfPixel, data.width * (3 / 4) + halfPixel, data.height / 3 + halfPixel, fill = "black")
-
-# draws the bot's mouth
-def drawMouth(canvas, data, pixelLen):
-    canvas.create_rectangle(data.width / 3, data.height / 3 + (pixelLen * 3), data.width * 2 / 3, data.height / 3 + (pixelLen * 4), fill = "black")
-    canvas.create_rectangle(data.width / 3 - pixelLen, data.height / 3 + (pixelLen * 2), data.width / 3, data.height / 3 + (pixelLen * 3), fill = "black")
-    canvas.create_rectangle(data.width * 2 / 3, data.height / 3 + (pixelLen * 2), data.width * 2 / 3 + pixelLen, data.height / 3 + (pixelLen * 3), fill = "black")
-
-# draws settings
-def drawSettings(canvas, data):
-    lineLen = data.width / 25
-    lineHeight = data.width / 120
-    leftCor = data.width / 40
-    for i in range(3):
-        canvas.create_rectangle(leftCor, leftCor + 2 * i * lineHeight, leftCor + lineLen, leftCor + lineHeight + 2 * i * lineHeight, fill = "dark grey", width = 0)
         
 def sendMsg(data, log, entry):
     if len(entry.get()) > 0:
