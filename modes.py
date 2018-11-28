@@ -1,13 +1,26 @@
 """ Credit: Got mode idea from https://www.cs.cmu.edu/~112/notes/notes-animations-demos.html#modeDemo
 Credit got colors from: http://www.science.smith.edu/dftwiki/index.php/Color_Charts_for_TKinter"""
+
+# major work in progress :)
+
 from emotionReader import *
 from tkinter import *
 import time
+from drawChatbot import *
+from chatbotAnswer import *
+from tkinter import *
+import random
+import cv2
+import numpy as np
 
 
 def init(data): 
     data.mode = "start" 
     makeButtons(data)
+    data.chatLog = []
+    data.overallEmotions = []
+    data.userEntry = ""
+    data.chatResponse = ""
 
 def mousePressed(event, data): 
     if data.mode == "load":
