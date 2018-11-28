@@ -26,8 +26,7 @@ def init(data):
     data.overallEmotions = []
     data.userEntry = ""
     data.chatResponse = ""
-    data.foundFace = False
-    data.foundFirstFace = False
+    trainEmotionDetector()
 
 # if the mouse is pressed, bot should say ouch (some binding problems)
 def mousePressed(event, data, log):
@@ -61,18 +60,6 @@ def processMessage(data, log, entry):
     log.config(state = DISABLED)
     print(data.chatLog)
 
-# chatbot processes that it has found a face
-def processFace(data, log):
-    faceDetection = "I found your face!"
-    log.config(state = NORMAL)
-    if data.foundFace and not data.foundFirstFace:
-        data.chatLog.append(faceDetection)
-        data.foundFirstFace = True
-        log.insert(END, "\n" + faceDetection)    
-    log.yview_pickplace(END)
-    log.config(state = DISABLED)
-    print(data.chatLog)
-        
 # key press for canvas - currently inactive
 def keyPressed(event, data, entry, log):
     pass
@@ -193,7 +180,7 @@ def run(width=300, height=300):
     scrollBar.config(command=log.yview)
     log.grid(row = 1, columnspan = 7)
     scrollBar.grid(row = 1, column = 7)
-     
+        
     root.resizable(width=False, height=False) # prevents resizing window
     init(data)
     # create the root and the canvas
