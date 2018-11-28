@@ -13,6 +13,16 @@ import time
 
 classifier = cv2.CascadeClassifier("/Users/estherjang/Documents/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
 
+foundEmotions = []
+# set up the emotions
+emotions = ["happy", "neutral", "sad", "angry", "surprised"]
+# create emotion detector object
+emotionDetector = cv2.face.FisherFaceRecognizer_create() 
+# train the emotion detector
+trainEmotionDetector()
+# turn on camera
+cap = cv2.VideoCapture(0)
+
 # gets all the images from the dataset of a given emotion
 def getImages(emotion):
     allImages = []
@@ -75,8 +85,6 @@ def predictOverallEmotion(lst):
     return mostCommonEmotion
 
 def getEmotion():
-    # print(foundEmotions)
-    overallEmotion = ""
     ret, frame = cap.read()
     # looks for face + creates image of it if face is found
     foundFaceInfo = findFace(frame)
@@ -90,14 +98,8 @@ def getEmotion():
         pred, conf = emotionDetector.predict(gray)
         emotion = emotions[pred]
         foundEmotions.append(emotion)
-        # if len(foundEmotions) == 10:
-        #     overallEmotion = predictOverallEmotion(foundEmotions)
-        #     del foundEmotions[:]
-        #     # display the emotion information
-        #     print("Most likely feeling", overallEmotion)
         displayInformation(frame, faceCoords, emotion)
         cv2.imshow("Emotion Detector", frame)
-    #    cv2.waitKey(100) 
         # delete temporary image
         os.remove("tmpImg.jpg")
         return emotion
@@ -105,22 +107,4 @@ def getEmotion():
     else:
         cv2.putText(frame, "Don't see face", (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 2)
         cv2.imshow("Emotion Detector", frame)
-    #    cv2.waitKey(100)
         return None
-
-overallEmotion = ""
-foundEmotions = []
-# set up the emotions
-emotions = ["happy", "neutral", "sad", "angry", "surprised"]
-# create emotion detector object
-emotionDetector = cv2.face.FisherFaceRecognizer_create() 
-# train the emotion detector
-trainEmotionDetector()
-# turn on camera
-cap = cv2.VideoCapture(0)
-# 
-# while (True):
-#     getEmotion(foundEmotions)
-#     
-# os.remove("tmpImg.jpg")
-    
