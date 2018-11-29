@@ -1,13 +1,4 @@
-""" Credit:
-"Updated Animation Starter Code" template from https://www.cs.cmu.edu/~112/notes/notes-animations-part2.html
-Entry Box Tutorial: http://effbot.org/tkinterbook/entry.htm
-Understanding .pack(): http://effbot.org/tkinterbook/pack.htm
-Text Tutorials: https://www.tutorialspoint.com/python/tk_text.htm http://effbot.org/tkinterbook/text.htm
-ScrollBat Tutorial: http://effbot.org/zone/tkinter-scrollbar-patterns.htm
-Grid Tutorial: http://effbot.org/tkinterbook/grid.htm
-Button Tutorial: http://effbot.org/tkinterbook/button.htm
-Events and Binding Tutorial: http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
-"""
+
 
 from drawChatbot import *
 from emotionReader import *
@@ -180,7 +171,7 @@ def run(width=300, height=300):
     scrollBar.config(command=log.yview)
     log.grid(row = 1, columnspan = 7)
     scrollBar.grid(row = 1, column = 7)
-        
+    
     root.resizable(width=False, height=False) # prevents resizing window
     init(data)
     # create the root and the canvas
