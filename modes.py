@@ -27,11 +27,15 @@ import numpy as np
 def init(data): 
     data.mode = "start" 
     makeButtons(data)
+    lineLen = data.width / 25
+    lineHeight = data.width / 120
+    leftCor = data.width / 40
+    data.settingsIcon = SettingsIcon(lineLen, lineHeight, leftCor)
     data.chatLog = []
     data.overallEmotions = []
     data.userEntry = ""
     data.chatResponse = ""
-    trainEmotionDetector()
+   # trainEmotionDetector()
 
 def mousePressed(event, data): 
     if data.mode == "start": 
@@ -85,23 +89,6 @@ def redrawAll(canvas, data, entry, scrollBar, log, button):
         runRedrawAll(canvas, data)
     elif data.mode == "help":
         helpRedrawAll(canvas, data)
-        
-##### load mode
-def loadMousePressed(event, data):
-    pass
-    
-def loadKeyPressed(event, data):
-    pass
-
-def loadTimerFired(data):
-    pass
-
-def loadRedrawAll(canvas, data):
-    startTime = time.time()
-    trainEmotionDetector()
-    stopTime = time.time()
-    print(stopTime - startTime)
-    data.mode = "start"
 
 ###### start mode 
 class ScreenButton(object):
@@ -225,28 +212,31 @@ def sendMsg(data, log, entry):
         processMessage(data, log, entry)
         
 def runMousePressed(event, data):
-    pass
+    if data.settingsIcon.isPressed(event.x, event.y):
+        data.mode = "settings"
+        print("SETTINGS PRESSED")
     
 def runKeyPressed(event, data):
     pass
     
 def runTimerFired(data, log):
-    getEmotion()
-    # writes an overall emotion for every 10 emotions
-    if len(foundEmotions) == 10:
-        overallEmotion = predictOverallEmotion(foundEmotions)
-        data.overallEmotions.append(overallEmotion)
-        del foundEmotions[:]
-    # when 10 overall emotions are found, check up on user
-    
-    if len(data.overallEmotions) == 10:
-        mainEmotion = predictOverallEmotion(data.overallEmotions)
-        log.config(state = NORMAL)
-        respondToEmotion(mainEmotion, log)
-        data.overallEmotions = []
-        log.yview_pickplace(END)
-        log.config(state = DISABLED)
-    print("all emotions", data.overallEmotions)
+    pass
+    # getEmotion()
+    # # writes an overall emotion for every 10 emotions
+    # if len(foundEmotions) == 10:
+    #     overallEmotion = predictOverallEmotion(foundEmotions)
+    #     data.overallEmotions.append(overallEmotion)
+    #     del foundEmotions[:]
+    # # when 10 overall emotions are found, check up on user
+    # 
+    # if len(data.overallEmotions) == 10:
+    #     mainEmotion = predictOverallEmotion(data.overallEmotions)
+    #     log.config(state = NORMAL)
+    #     respondToEmotion(mainEmotion, log)
+    #     data.overallEmotions = []
+    #     log.yview_pickplace(END)
+    #     log.config(state = DISABLED)
+    # print("all emotions", data.overallEmotions)
 
         
 def runRedrawAll(canvas, data):
@@ -254,11 +244,14 @@ def runRedrawAll(canvas, data):
     pixelLen = data.width / 30
     drawEyes(canvas, data, pixelLen)
     drawMouth(canvas, data, pixelLen)
-    drawSettings(canvas, data)
+    data.settingsIcon.color = "dark gray"
+    data.settingsIcon.draw(canvas)
     
 ##### settings mode
 def settingsMousePressed(event, data):
-    pass
+    if data.settingsIcon.isPressed(event.x, event.y):
+        data.mode = "run"
+        print("SETTINGS PRESSED")
     
 def settingsKeyPressed(event, data):
     pass
@@ -267,7 +260,10 @@ def settingsTimerFired(data):
     pass
     
 def settingsRedrawAll(canvas, data):
-    pass
+    canvas.create_rectangle(0, 0, data.width, data.height, fill = "gray", width = 0)
+    data.settingsIcon.color = "white"
+    data.settingsIcon.draw(canvas)
+
     
 ##### help mode
 def helpMousePressed(event, data):
