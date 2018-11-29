@@ -12,10 +12,19 @@ def drawMouth(canvas, data, pixelLen):
     canvas.create_rectangle(data.width / 3 - pixelLen, data.height / 3 + (pixelLen * 2), data.width / 3, data.height / 3 + (pixelLen * 3), fill = "black")
     canvas.create_rectangle(data.width * 2 / 3, data.height / 3 + (pixelLen * 2), data.width * 2 / 3 + pixelLen, data.height / 3 + (pixelLen * 3), fill = "black")
 
-# draws settings
-def drawSettings(canvas, data):
-    lineLen = data.width / 25
-    lineHeight = data.width / 120
-    leftCor = data.width / 40
-    for i in range(3):
-        canvas.create_rectangle(leftCor, leftCor + 2 * i * lineHeight, leftCor + lineLen, leftCor + lineHeight + 2 * i * lineHeight, fill = "dark grey", width = 0)
+class SettingsIcon(object):
+    def __init__(self, len, height, leftCoordinate):
+        self.color = "gray"
+        self.len = len
+        self.height = height
+        self.coord = leftCoordinate
+        
+    def draw(self, canvas):
+        for i in range(3):
+            canvas.create_rectangle(self.coord, self.coord + 2 * i * self.height, self.coord + self.len, self.coord + self.height + 2 * i * self.height, fill = self.color, width = 0)
+            
+    def isPressed(self, mouseX, mouseY):
+        if mouseX >= self.coord and mouseX <= self.coord + self.len:
+            if mouseY >= self.coord and mouseY <= self.coord + (self.height * 5):
+                return True
+        return False
