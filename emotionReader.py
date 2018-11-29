@@ -10,6 +10,9 @@ Credit: Learned similar concepts from https://www.superdatascience.com/opencv-fa
 Credits for openCV tutorials:
 Live camera capture: https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_video_display/py_video_display.html#display-video
 Face detection: https://docs.opencv.org/3.4.3/d7/d8b/tutorial_py_face_detection.html
+
+Credit for emotion dataset images:
+Lucey, P., Cohn, J. F., Kanade, T., Saragih, J., Ambadar, Z., & Matthews, I. (2010). The Extended Cohn-Kanade Dataset (CK+): A complete expression dataset for action unit and emotion-specified expression. Proceedings of the Third International Workshop on CVPR for Human Communicative Behavior Analysis (CVPR4HB 2010), San Francisco, USA, 94-101
 """
 import cv2
 import random
