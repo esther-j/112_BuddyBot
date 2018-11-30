@@ -39,7 +39,7 @@ def init(data):
 def makeSettingsOptions(data):
     data.goHomeOption = SettingsOption(data.width / 6, data.height / 5, data.width / 30, "Go back home", "dark grey", data.height // 18)
     data.changeColorOption = SettingsOption(data.width / 6, data.height * 3 / 10, data.width / 30, "Change bot color", data.botColor, data.height // 18)
-    data.faceDetectionOption = SettingsOption(data.width / 6, data.height * 2 / 5, data.width / 30, "Turn off face detection", "dark grey", data.height // 18)
+    data.faceDetectionOption = SettingsOption(data.width / 6, data.height * 2 / 5, data.width / 30, "Turn off face detection (currently on)", "dark grey", data.height // 18)
 
 def makeSettingsIcon(data):
     lineLen = data.width / 25
@@ -287,9 +287,7 @@ def settingsMousePressed(event, data):
             data.faceDetectionOption.option = "Turn on face detection (currently off)"
         else:
             data.detectFace = True
-            data.faceDetectionOption.option = "Turn off face detection (currently on)"
-        print("detect face", data.detectFace)
-            
+            data.faceDetectionOption.option = "Turn off face detection (currently on)"            
     
 def settingsKeyPressed(event, data):
     pass
