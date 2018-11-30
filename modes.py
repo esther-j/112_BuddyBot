@@ -11,8 +11,6 @@ Events and Binding Tutorial: http://effbot.org/tkinterbook/tkinter-events-and-bi
 Credit: Got mode idea from https://www.cs.cmu.edu/~112/notes/notes-animations-demos.html#modeDemo
 Credit got colors from: http://www.science.smith.edu/dftwiki/index.php/Color_Charts_for_TKinter"""
 
-# major work in progress :)
-
 from emotionReader import *
 from tkinter import *
 import time
@@ -35,8 +33,8 @@ def init(data):
     data.userEntry = ""
     data.colorOptions = ["LightBlue1", "red", "orange", "yellow", "green", "blue", "purple"]
     data.chatResponse = ""
-    # trainEmotionDetector()
-    data.detectFace = False
+    trainEmotionDetector()
+    data.detectFace = True
 
 def makeSettingsOptions(data):
     data.goHomeOption = SettingsOption(data.width / 6, data.height / 5, data.width / 30, "Go back home", "dark grey", data.height // 18)
@@ -152,7 +150,7 @@ def startKeyPressed(event, data):
     pass
     
 def startTimerFired(data):
-    pass    
+    cv2.destroyAllWindows()
 
 def startRedrawAll(canvas, data):
     titleFontSize = data.height // 6
@@ -233,6 +231,8 @@ def runKeyPressed(event, data):
     pass
     
 def runTimerFired(data, log):
+    cap = cv2.VideoCapture(0)
+    print("detect face", data.detectFace)
     if data.detectFace:
         getEmotion()
         # writes an overall emotion for every 10 emotions
@@ -251,7 +251,8 @@ def runTimerFired(data, log):
             log.config(state = DISABLED)
         print("all emotions", data.overallEmotions)
     else:
-        pass
+        cap.release()
+        cv2.destroyAllWindows()
 
         
 def runRedrawAll(canvas, data):
@@ -281,19 +282,20 @@ def settingsMousePressed(event, data):
         data.botColor = data.colorOptions[newColor]
         data.changeColorOption.color = data.botColor
     elif data.faceDetectionOption.isPressed(event.x, event.y):
-        if data.faceDetectionOption.option == "Turn off face detection":
-            data.detectFace = True
-            data.faceDetectionOption.option = "Turn on face detection"
-        else:
+        if data.detectFace:
             data.detectFace = False
-            data.faceDetectionOption.option = "Turn off face detection"
+            data.faceDetectionOption.option = "Turn on face detection (currently off)"
+        else:
+            data.detectFace = True
+            data.faceDetectionOption.option = "Turn off face detection (currently on)"
+        print("detect face", data.detectFace)
             
     
 def settingsKeyPressed(event, data):
     pass
     
 def settingsTimerFired(data):
-    pass
+    cv2.destroyAllWindows()
     
 class SettingsOption(object):
     def __init__(self, x, y, boxLen, option, color, size):
@@ -421,7 +423,7 @@ def run(width=300, height=300):
 
     # and launch the app
     root.mainloop()  # blocks until window is closed
-    capture.release()
-    cv2.destroyAllWindows()
 
 run(800, 500)
+cv2.destroyAllWindows()
+cap.release()

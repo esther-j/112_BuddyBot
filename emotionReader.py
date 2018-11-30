@@ -46,6 +46,7 @@ def trainEmotionDetector():
             # add the image and its given label to the data
             trainingImages.append(grayImage)
             labels.append(emotions.index(emotion))
+            
     print("Currently have %d images" % len(trainingImages))
     print("Started training...", end = "")
     emotionDetector.train(trainingImages, np.asarray(labels))
@@ -54,6 +55,7 @@ def trainEmotionDetector():
 # returns whether a face is seen or not
 # looks for a face and writes the face as a temp file if finds one 
 def findFace(frame):
+    cap = cv2.VideoCapture(0)
     grayImg = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     face = classifier.detectMultiScale(grayImg, 1.3, 5)
     
