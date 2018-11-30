@@ -27,18 +27,20 @@ import numpy as np
 def init(data): 
     data.mode = "start" 
     makeButtons(data)
+    data.botColor = "LightBlue1"
     makeSettingsIcon(data)
     makeSettingsOptions(data)
     data.chatLog = []
     data.overallEmotions = []
     data.userEntry = ""
+    data.colorOptions = ["LightBlue1", "red", "orange", "yellow", "green", "blue", "purple"]
     data.chatResponse = ""
     # trainEmotionDetector()
     data.detectFace = False
 
 def makeSettingsOptions(data):
     data.goHomeOption = SettingsOption(data.width / 6, data.height / 5, data.width / 30, "Go back home", "dark grey", data.height // 18)
-    data.changeColorOption = SettingsOption(data.width / 6, data.height * 3 / 10, data.width / 30, "Change bot color", "LightBlue1", data.height // 18)
+    data.changeColorOption = SettingsOption(data.width / 6, data.height * 3 / 10, data.width / 30, "Change bot color", data.botColor, data.height // 18)
     data.faceDetectionOption = SettingsOption(data.width / 6, data.height * 2 / 5, data.width / 30, "Turn off face detection", "dark grey", data.height // 18)
 
 def makeSettingsIcon(data):
@@ -226,7 +228,6 @@ def sendMsg(data, log, entry):
 def runMousePressed(event, data):
     if data.settingsIcon.isPressed(event.x, event.y):
         data.mode = "settings"
-        print("SETTINGS PRESSED")
     
 def runKeyPressed(event, data):
     pass
@@ -254,7 +255,7 @@ def runTimerFired(data, log):
 
         
 def runRedrawAll(canvas, data):
-    canvas.create_rectangle(0, 0, data.width, data.height, fill = "LightBlue1", width = 0)
+    canvas.create_rectangle(0, 0, data.width, data.height, fill = data.botColor, width = 0)
     pixelLen = data.width / 30
     drawEyes(canvas, data, pixelLen)
     drawMouth(canvas, data, pixelLen)
@@ -269,13 +270,24 @@ def subtitle(data, canvas, topX, topY, title):
 def settingsMousePressed(event, data):
     if data.settingsIcon.isPressed(event.x, event.y):
         data.mode = "run"
-        print("SETTINGS PRESSED")
     elif data.goHomeOption.isPressed(event.x, event.y):
-        print("going home")
+        data.mode = "start"
     elif data.changeColorOption.isPressed(event.x, event.y):
-        print("changing color")
+        colorIndex = data.colorOptions.index(data.botColor)
+        if colorIndex + 1 == len(data.colorOptions):
+            newColor = 0
+        else:
+            newColor = colorIndex + 1
+        data.botColor = data.colorOptions[newColor]
+        data.changeColorOption.color = data.botColor
     elif data.faceDetectionOption.isPressed(event.x, event.y):
-        print("detect face change")
+        if data.faceDetectionOption.option == "Turn off face detection":
+            data.detectFace = True
+            data.faceDetectionOption.option = "Turn on face detection"
+        else:
+            data.detectFace = False
+            data.faceDetectionOption.option = "Turn off face detection"
+            
     
 def settingsKeyPressed(event, data):
     pass
@@ -299,13 +311,13 @@ class SettingsOption(object):
     def isPressed(self, mouseX, mouseY):
         if mouseX >= self.x - 2 * self.boxLen and mouseX <= self.x - self.boxLen:
             if mouseY >= self.y and mouseY <= self.y + self.boxLen:
-                print("option pressed")
                 return True
         return False
     
 def settingsRedrawAll(canvas, data):
     canvas.create_rectangle(0, 0, data.width, data.height, fill = "gray", width = 0)
     subtitle(data, canvas, data.width / 10, data.height / 120, "Settings")
+    canvas.create_text(data.width * 7 / 20, data.height / 15, text = "(Click square to select/change)", font = "arial %d bold" % (data.height // 30), anchor = NW)
     data.settingsIcon.color = "white"
     data.settingsIcon.draw(canvas)
     data.goHomeOption.draw(canvas)
