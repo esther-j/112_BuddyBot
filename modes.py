@@ -27,15 +27,25 @@ import numpy as np
 def init(data): 
     data.mode = "start" 
     makeButtons(data)
-    lineLen = data.width / 25
-    lineHeight = data.width / 120
-    leftCor = data.width / 40
-    data.settingsIcon = SettingsIcon(lineLen, lineHeight, leftCor)
+    makeSettingsIcon(data)
+    makeSettingsOptions(data)
     data.chatLog = []
     data.overallEmotions = []
     data.userEntry = ""
     data.chatResponse = ""
-   # trainEmotionDetector()
+    # trainEmotionDetector()
+    data.detectFace = False
+
+def makeSettingsOptions(data):
+    data.goHomeOption = SettingsOption(data.width / 6, data.height / 5, data.width / 30, "Go back home", "dark grey", data.height // 18)
+    data.changeColorOption = SettingsOption(data.width / 6, data.height * 3 / 10, data.width / 30, "Change bot color", "LightBlue1", data.height // 18)
+    data.faceDetectionOption = SettingsOption(data.width / 6, data.height * 2 / 5, data.width / 30, "Turn off face detection", "dark grey", data.height // 18)
+
+def makeSettingsIcon(data):
+    lineLen = data.width / 25
+    lineHeight = data.height / 90
+    leftCor = data.width / 40
+    data.settingsIcon = SettingsIcon(lineLen, lineHeight, leftCor)    
 
 def mousePressed(event, data): 
     if data.mode == "start": 
@@ -52,6 +62,8 @@ def keyPressed(event, data):
         startKeyPressed(event, data)
     elif data.mode == "settings":
         settingsKeyPressed(event, data)
+    elif data.mode == "run":
+        runKeyPressed(event, data)
     elif data.mode == "help":
         helpKeyPressed(event, data)
         
@@ -92,14 +104,14 @@ def redrawAll(canvas, data, entry, scrollBar, log, button):
 
 ###### start mode 
 class ScreenButton(object):
-    def __init__(self, cx, cy, width, height, color, fontColor, size, text):
+    def __init__(self, data, cx, cy, text):
         self.cx = cx
         self.cy = cy
-        self.width = width
-        self.height = height
-        self.color = color
-        self.fontColor = fontColor
-        self.size = size
+        self.width = data.width / 10
+        self.height = data.height / 20
+        self.color = "DodgerBlue1"
+        self.fontColor = "white"
+        self.size = data.height // 18
         self.text = text
         
     def draw(self, canvas):
@@ -122,17 +134,17 @@ def makeButtons(data):
     buttonW = data.width / 10
     buttonH = data.height / 20
     buttonFontSize = data.height // 18
-    data.startButton = ScreenButton(data.width / 2, startY, buttonW, buttonH, "DodgerBlue1", "white", buttonFontSize, "Start")
-    data.helpButton = ScreenButton(data.width / 2, helpY, buttonW, buttonH, "DodgerBlue1", "white", buttonFontSize, "Help")
+    data.startButton = ScreenButton(data, data.width / 2, startY, "Start")
+    data.helpButton = ScreenButton(data, data.width / 2, helpY, "Help")
+    backX = data.width / 8
+    backY = data.height / 10
+    data.backButton = ScreenButton(data, backX, backY, "Back")
     
 def startMousePressed(event, data):
     if data.startButton.isPressed(event.x, event.y):
-        print("START PRESSED")
         data.mode = "run"
-        
     elif data.helpButton.isPressed(event.x, event.y):
-        print("HELP PRESSED")
-        # data.mode = "help"
+        data.mode = "help"
         
 def startKeyPressed(event, data):
     pass
@@ -161,14 +173,14 @@ def chatBotResponse(data, log):
     typicalResponse = ["ok", "nice", "sounds interesting"]
     data.chatResponse = random.choice(typicalResponse)
     messageType(data)
-    log.insert(END, "\n" + data.chatResponse)
+    log.insert(END, "\nBuddyBot: %s" % data.chatResponse)
 
 # chatbot processes the message said by user
 def processMessage(data, log, entry):
     entry.delete(0, END)
     data.chatLog.append(data.userEntry)
     log.config(state = NORMAL)
-    log.insert(END, "\n" + data.userEntry)
+    log.insert(END, "\nYou: %s" % data.userEntry)
     chatBotResponse(data, log)
     log.yview_pickplace(END)
     log.config(state = DISABLED)
@@ -199,12 +211,12 @@ def respondToEmotion(emotion, log):
         angryResponses = ["Ah! You seem kind of angry recently",
                         "You seem upset. What's wrong?"]
         msg = random.choice(angryResponses)
-    elif emotion == "surprise":
+    elif emotion == "surprised":
         surpriseResponses = ["Did something happen? Why do you seem surprised?"
                             "What's new? You look surprised"]
         msg = random.choice(surpriseResponses)
     if len(msg) != 0:
-        log.insert(END, "\n" + msg)
+        log.insert(END, "\nBuddyBot: %s" % msg)
     
 def sendMsg(data, log, entry):
     if len(entry.get()) > 0:
@@ -220,27 +232,29 @@ def runKeyPressed(event, data):
     pass
     
 def runTimerFired(data, log):
-    pass
-    # getEmotion()
-    # # writes an overall emotion for every 10 emotions
-    # if len(foundEmotions) == 10:
-    #     overallEmotion = predictOverallEmotion(foundEmotions)
-    #     data.overallEmotions.append(overallEmotion)
-    #     del foundEmotions[:]
-    # # when 10 overall emotions are found, check up on user
-    # 
-    # if len(data.overallEmotions) == 10:
-    #     mainEmotion = predictOverallEmotion(data.overallEmotions)
-    #     log.config(state = NORMAL)
-    #     respondToEmotion(mainEmotion, log)
-    #     data.overallEmotions = []
-    #     log.yview_pickplace(END)
-    #     log.config(state = DISABLED)
-    # print("all emotions", data.overallEmotions)
+    if data.detectFace:
+        getEmotion()
+        # writes an overall emotion for every 10 emotions
+        if len(foundEmotions) == 10:
+            overallEmotion = predictOverallEmotion(foundEmotions)
+            data.overallEmotions.append(overallEmotion)
+            del foundEmotions[:]
+        # when 10 overall emotions are found, check up on user
+        
+        if len(data.overallEmotions) == 10:
+            mainEmotion = predictOverallEmotion(data.overallEmotions)
+            log.config(state = NORMAL)
+            respondToEmotion(mainEmotion, log)
+            data.overallEmotions = []
+            log.yview_pickplace(END)
+            log.config(state = DISABLED)
+        print("all emotions", data.overallEmotions)
+    else:
+        pass
 
         
 def runRedrawAll(canvas, data):
-    canvas.create_rectangle(0, 0, data.width, data.height, fill = "sky blue", width = 0)
+    canvas.create_rectangle(0, 0, data.width, data.height, fill = "LightBlue1", width = 0)
     pixelLen = data.width / 30
     drawEyes(canvas, data, pixelLen)
     drawMouth(canvas, data, pixelLen)
@@ -248,10 +262,20 @@ def runRedrawAll(canvas, data):
     data.settingsIcon.draw(canvas)
     
 ##### settings mode
+def subtitle(data, canvas, topX, topY, title):
+    size = data.height / 10    
+    canvas.create_text(topX, topY, text = title, font = "arial %d bold" % size, anchor = NW)
+
 def settingsMousePressed(event, data):
     if data.settingsIcon.isPressed(event.x, event.y):
         data.mode = "run"
         print("SETTINGS PRESSED")
+    elif data.goHomeOption.isPressed(event.x, event.y):
+        print("going home")
+    elif data.changeColorOption.isPressed(event.x, event.y):
+        print("changing color")
+    elif data.faceDetectionOption.isPressed(event.x, event.y):
+        print("detect face change")
     
 def settingsKeyPressed(event, data):
     pass
@@ -259,15 +283,40 @@ def settingsKeyPressed(event, data):
 def settingsTimerFired(data):
     pass
     
+class SettingsOption(object):
+    def __init__(self, x, y, boxLen, option, color, size):
+        self.x = x
+        self.y = y
+        self.option = option
+        self.color = color
+        self.boxLen = boxLen
+        self.size = size
+        
+    def draw(self, canvas):
+        canvas.create_rectangle(self.x - 2 * self.boxLen, self.y, self.x - self.boxLen, self.y + self.boxLen, fill = self.color)
+        canvas.create_text(self.x, self.y, text = self.option, font = "arial %d" % self.size, anchor = NW)
+    
+    def isPressed(self, mouseX, mouseY):
+        if mouseX >= self.x - 2 * self.boxLen and mouseX <= self.x - self.boxLen:
+            if mouseY >= self.y and mouseY <= self.y + self.boxLen:
+                print("option pressed")
+                return True
+        return False
+    
 def settingsRedrawAll(canvas, data):
     canvas.create_rectangle(0, 0, data.width, data.height, fill = "gray", width = 0)
+    subtitle(data, canvas, data.width / 10, data.height / 120, "Settings")
     data.settingsIcon.color = "white"
     data.settingsIcon.draw(canvas)
+    data.goHomeOption.draw(canvas)
+    data.changeColorOption.draw(canvas)
+    data.faceDetectionOption.draw(canvas)
 
     
 ##### help mode
 def helpMousePressed(event, data):
-    pass
+    if data.backButton.isPressed(event.x, event.y):
+        data.mode = "start"
     
 def helpKeyPressed(event, data):
     pass
@@ -276,7 +325,15 @@ def helpTimerFired(data):
     pass
     
 def helpRedrawAll(canvas, data):
-    pass
+    data.backButton.draw(canvas)
+    subtitle(data, canvas, data.width / 4, data.height / 20, "What is BuddyBot?")
+    helpText = """\
+    BuddyBot is a friendly, interactive chatbot who is always down to have a 
+    conversation. BuddyBot can also detect emotions and wants to talk them out 
+    with you. The bot is also customizable so you can personalize it however you
+    want. This includes turning off face detection. 
+    """
+    canvas.create_text(0, data.height / 5, text = helpText, font = "arial 20", anchor = NW)
     
     #################################### # use the run function as-is #################################### 
 def run(width=300, height=300):
