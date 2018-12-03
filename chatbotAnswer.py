@@ -3,10 +3,14 @@ import random
 # user message is a question
 def question(data):
     answers = ["I don't know", "no", "yes"]
-    if data.userEntry[-1] == "?":
+    if len(data.userEntry) > 0 and data.userEntry[-1] == "?":
         data.chatResponse = random.choice(answers)
         yesNoQuestion(data)
         specificQuestion(data)
+    elif len(data.userEntry) >= 3:
+        startKey = ["why", "how", "who", "what", "wat", "when", "where"]
+        if data.userEntry.split()[0] in startKey:
+            specificQuestion(data)
 
 # user message is a yes/no question
 def yesNoQuestion(data):
@@ -26,10 +30,10 @@ def specificQuestion(data):
         if len(words[i]) > 0:
             if words[i][-1] == "?":
                 words[i] = words[i][:-1]
-    startKey = ["why", "how", "who", "what", "when", "where"]
+    startKey = ["why", "how", "who", "what", "wat", "when", "where"]
     responses = ["what do you think?", "good question", "not sure"]
     definingWord = ["the", "a", "your", "my"]
-    adjectives = ["funny", "happy", "weird", "cool", "fuzzy", "orange"]
+    adjectives = ["funny", "happy", "weird", "cool", "fuzzy", "orange", "sad"]
     
     # parse through question words, looking for keywords
     if words[0] in startKey:
@@ -38,6 +42,10 @@ def specificQuestion(data):
             # see if bot is being talked about
             if words[2] == "you":
                 data.chatResponse = "I am " + random.choice(adjectives)
+            elif words[2] == "your" and words[3] != "":
+                data.chatResponse = "My %s is %s" % (words[3], random.choice(adjectives))
+            elif words[2] == "my" and words[3] != "":
+                data.chatResponse = "Your %s is %s" % (words[3], random.choice(adjectives))
             elif words[2] in definingWord:
                 data.chatResponse = "%s %s %s %s" % (words[2], words[3], words[1], random.choice(adjectives))
             else:
