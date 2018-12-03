@@ -46,7 +46,7 @@ def trainEmotionDetector():
             # add the image and its given label to the data
             trainingImages.append(grayImage)
             labels.append(emotions.index(emotion))
-            
+    print("Welcome to BuddyBot! Please wait while it loads. :)")
     print("Currently have %d images" % len(trainingImages))
     print("Started training...", end = "")
     emotionDetector.train(trainingImages, np.asarray(labels))
@@ -117,8 +117,6 @@ emotions = ["happy", "sad", "neutral", "angry", "surprised"]
 #removed neutral
 
 # create emotion detector object
-emotionDetector = cv2.face.FisherFaceRecognizer_create() 
-# train the emotion detector
-# trainEmotionDetector()
+emotionDetector = cv2.face.FisherFaceRecognizer_create()
 # turn on camera
 cap = cv2.VideoCapture(0)
