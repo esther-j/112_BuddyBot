@@ -9,8 +9,15 @@ Button Tutorial: http://effbot.org/tkinterbook/button.htm
 Events and Binding Tutorial: http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
 
 Credit: Got mode idea from https://www.cs.cmu.edu/~112/notes/notes-animations-demos.html#modeDemo
-Credit got colors from: http://www.science.smith.edu/dftwiki/index.php/Color_Charts_for_TKinter"""
+Credit got colors from: http://www.science.smith.edu/dftwiki/index.php/Color_Charts_for_TKinter
 
+Credit: ChatterBot tutorial from https://www.youtube.com/watch?v=3k8OFy-etoo
+"""
+
+from helpMode import *
+from startMode import *
+from settingsMode import *
+from widgets import *
 from emotionReader import *
 from tkinter import *
 import time
@@ -20,12 +27,17 @@ from tkinter import *
 import random
 import cv2
 import numpy as np
+from chatterbot import ChatBot
+from chatterbot.trainers import ListTrainer
 
 
 def init(data): 
+    data.timer = 0
+    setupChatBot()
+    data.blink = False
     data.mode = "start" 
-    makeButtons(data)
     data.botColor = "LightBlue1"
+    makeButtons(data)
     makeSettingsIcon(data)
     makeSettingsOptions(data)
     data.chatLog = []
@@ -33,8 +45,19 @@ def init(data):
     data.userEntry = ""
     data.colorOptions = ["LightBlue1", "red", "orange", "yellow", "green", "blue", "purple"]
     data.chatResponse = ""
+    data.emotion = "happy"
     trainEmotionDetector()
     data.detectFace = True
+
+def setupChatBot():
+    chatBot = ChatBot("buddyBot")
+    chatBot.set_trainer(ListTrainer)
+    
+    trainingData  = "/Users/estherjang/Downloads/chatterbot-corpus-master/chatterbot_corpus/data/english/"
+    
+    for files in os.listdir(trainingData):
+            data = open(trainingData + files, 'r').readlines()
+            chatBot.train(data)
 
 def makeSettingsOptions(data):
     data.goHomeOption = SettingsOption(data.width / 6, data.height / 5, data.width / 30, "Go back home", "dark grey", data.height // 18)
@@ -46,6 +69,18 @@ def makeSettingsIcon(data):
     lineHeight = data.height / 90
     leftCor = data.width / 40
     data.settingsIcon = SettingsIcon(lineLen, lineHeight, leftCor)    
+
+def makeButtons(data):
+    startY = data.height * 9 / 20
+    helpY = data.height * 3 / 5
+    buttonW = data.width / 10
+    buttonH = data.height / 20
+    buttonFontSize = data.height // 18
+    data.startButton = ScreenButton(data, data.width / 2, startY, "Start")
+    data.helpButton = ScreenButton(data, data.width / 2, helpY, "Help")
+    backX = data.width / 8
+    backY = data.height / 10
+    data.backButton = ScreenButton(data, backX, backY, "Back")
 
 def mousePressed(event, data): 
     if data.mode == "start": 
@@ -101,64 +136,6 @@ def redrawAll(canvas, data, entry, scrollBar, log, button):
         runRedrawAll(canvas, data)
     elif data.mode == "help":
         helpRedrawAll(canvas, data)
-
-###### start mode 
-class ScreenButton(object):
-    def __init__(self, data, cx, cy, text):
-        self.cx = cx
-        self.cy = cy
-        self.width = data.width / 10
-        self.height = data.height / 20
-        self.color = "DodgerBlue1"
-        self.fontColor = "white"
-        self.size = data.height // 18
-        self.text = text
-        
-    def draw(self, canvas):
-        canvas.create_rectangle(self.cx - self.width, self.cy - self.height, self.cx + self.width, self.cy + self.height, fill = self.color, width = 0)
-        canvas.create_text(self.cx, self.cy, text = self.text, fill = self.fontColor, font = "arial %s" % self.size)
-
-    def isPressed(self, mouseX, mouseY):
-        leftX = self.cx - self.width
-        rightX = self.cx + self.width
-        upY = self.cy - self.height
-        downY = self.cy + self.height
-        if mouseX >= leftX and mouseX <= rightX:
-            if mouseY >= upY and mouseY <= downY:
-                return True
-        return False
-        
-def makeButtons(data):
-    startY = data.height * 9 / 20
-    helpY = data.height * 3 / 5
-    buttonW = data.width / 10
-    buttonH = data.height / 20
-    buttonFontSize = data.height // 18
-    data.startButton = ScreenButton(data, data.width / 2, startY, "Start")
-    data.helpButton = ScreenButton(data, data.width / 2, helpY, "Help")
-    backX = data.width / 8
-    backY = data.height / 10
-    data.backButton = ScreenButton(data, backX, backY, "Back")
-    
-def startMousePressed(event, data):
-    if data.startButton.isPressed(event.x, event.y):
-        data.mode = "run"
-    elif data.helpButton.isPressed(event.x, event.y):
-        data.mode = "help"
-        
-def startKeyPressed(event, data):
-    pass
-    
-def startTimerFired(data):
-    cv2.destroyAllWindows()
-
-def startRedrawAll(canvas, data):
-    titleFontSize = data.height // 6
-
-    canvas.create_rectangle(0, 0, data.width, data.height, fill = "LightBlue1", width = 0)
-    canvas.create_text(data.width / 2, data.height / 4, text = "BuddyBot", fill = "DeepSkyBlue2", font = "arial %d bold" % titleFontSize)
-    data.startButton.draw(canvas)
-    data.helpButton.draw(canvas)
     
 ##### run chatbot mode
 # holds the current different message types
@@ -175,13 +152,25 @@ def chatBotResponse(data, log):
     messageType(data)
     log.insert(END, "\nBuddyBot: %s" % data.chatResponse)
 
+def chatterBotResponse(data, log):
+    reply = chatBot.get_response(data.userEntry)
+    message = str(reply)
+    newMsg = ""
+    for c in message:
+        if c != "-":
+            newMsg += c
+    data.chatResponse = newMsg.strip()
+    log.insert(END, "\nBuddyBot: %s" % data.chatResponse)
+
+
 # chatbot processes the message said by user
 def processMessage(data, log, entry):
     entry.delete(0, END)
     data.chatLog.append(data.userEntry)
     log.config(state = NORMAL)
     log.insert(END, "\nYou: %s" % data.userEntry)
-    chatBotResponse(data, log)
+    # chatBotResponse(data, log)
+    chatterBotResponse(data, log)
     log.yview_pickplace(END)
     log.config(state = DISABLED)
     print(data.chatLog)
@@ -231,8 +220,8 @@ def runKeyPressed(event, data):
     pass
     
 def runTimerFired(data, log):
+    data.timer += 1
     cap = cv2.VideoCapture(0)
-    print("detect face", data.detectFace)
     if data.detectFace:
         getEmotion()
         # writes an overall emotion for every 10 emotions
@@ -246,6 +235,7 @@ def runTimerFired(data, log):
             mainEmotion = predictOverallEmotion(data.overallEmotions)
             log.config(state = NORMAL)
             respondToEmotion(mainEmotion, log)
+            data.emotion = mainEmotion
             data.overallEmotions = []
             log.yview_pickplace(END)
             log.config(state = DISABLED)
@@ -254,99 +244,20 @@ def runTimerFired(data, log):
         cap.release()
         cv2.destroyAllWindows()
 
-        
 def runRedrawAll(canvas, data):
     canvas.create_rectangle(0, 0, data.width, data.height, fill = data.botColor, width = 0)
     pixelLen = data.width / 30
-    drawEyes(canvas, data, pixelLen)
-    drawMouth(canvas, data, pixelLen)
+    drawEyes(canvas, data, pixelLen)   
+    if data.emotion == "sad":
+        drawSadMouth(canvas, data, pixelLen)
+    elif data.emotion == "surprised":
+        drawSurprisedMouth(canvas, data, pixelLen)
+    else:
+        drawHappyMouth(canvas, data, pixelLen)
     data.settingsIcon.color = "dark gray"
     data.settingsIcon.draw(canvas)
-    
-##### settings mode
-def subtitle(data, canvas, topX, topY, title):
-    size = data.height / 10    
-    canvas.create_text(topX, topY, text = title, font = "arial %d bold" % size, anchor = NW)
 
-def settingsMousePressed(event, data):
-    if data.settingsIcon.isPressed(event.x, event.y):
-        data.mode = "run"
-    elif data.goHomeOption.isPressed(event.x, event.y):
-        data.mode = "start"
-    elif data.changeColorOption.isPressed(event.x, event.y):
-        colorIndex = data.colorOptions.index(data.botColor)
-        if colorIndex + 1 == len(data.colorOptions):
-            newColor = 0
-        else:
-            newColor = colorIndex + 1
-        data.botColor = data.colorOptions[newColor]
-        data.changeColorOption.color = data.botColor
-    elif data.faceDetectionOption.isPressed(event.x, event.y):
-        if data.detectFace:
-            data.detectFace = False
-            data.faceDetectionOption.option = "Turn on face detection (currently off)"
-        else:
-            data.detectFace = True
-            data.faceDetectionOption.option = "Turn off face detection (currently on)"            
-    
-def settingsKeyPressed(event, data):
-    pass
-    
-def settingsTimerFired(data):
-    cv2.destroyAllWindows()
-    
-class SettingsOption(object):
-    def __init__(self, x, y, boxLen, option, color, size):
-        self.x = x
-        self.y = y
-        self.option = option
-        self.color = color
-        self.boxLen = boxLen
-        self.size = size
-        
-    def draw(self, canvas):
-        canvas.create_rectangle(self.x - 2 * self.boxLen, self.y, self.x - self.boxLen, self.y + self.boxLen, fill = self.color)
-        canvas.create_text(self.x, self.y, text = self.option, font = "arial %d" % self.size, anchor = NW)
-    
-    def isPressed(self, mouseX, mouseY):
-        if mouseX >= self.x - 2 * self.boxLen and mouseX <= self.x - self.boxLen:
-            if mouseY >= self.y and mouseY <= self.y + self.boxLen:
-                return True
-        return False
-    
-def settingsRedrawAll(canvas, data):
-    canvas.create_rectangle(0, 0, data.width, data.height, fill = "gray", width = 0)
-    subtitle(data, canvas, data.width / 10, data.height / 120, "Settings")
-    canvas.create_text(data.width * 7 / 20, data.height / 15, text = "(Click square to select/change)", font = "arial %d bold" % (data.height // 30), anchor = NW)
-    data.settingsIcon.color = "white"
-    data.settingsIcon.draw(canvas)
-    data.goHomeOption.draw(canvas)
-    data.changeColorOption.draw(canvas)
-    data.faceDetectionOption.draw(canvas)
 
-    
-##### help mode
-def helpMousePressed(event, data):
-    if data.backButton.isPressed(event.x, event.y):
-        data.mode = "start"
-    
-def helpKeyPressed(event, data):
-    pass
-    
-def helpTimerFired(data):
-    pass
-    
-def helpRedrawAll(canvas, data):
-    data.backButton.draw(canvas)
-    subtitle(data, canvas, data.width / 4, data.height / 20, "What is BuddyBot?")
-    helpText = """\
-    BuddyBot is a friendly, interactive chatbot who is always down to have a 
-    conversation. BuddyBot can also detect emotions and wants to talk them out 
-    with you. The bot is also customizable so you can personalize it however you
-    want. This includes turning off face detection. 
-    """
-    canvas.create_text(0, data.height / 5, text = helpText, font = "arial 20", anchor = NW)
-    
     #################################### # use the run function as-is #################################### 
 def run(width=300, height=300):
     def redrawAllWrapper(canvas, data, entry, scrollBar, log, button):
