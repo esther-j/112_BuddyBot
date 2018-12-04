@@ -1,5 +1,8 @@
 # Draw the bot!
 from tkinter import *
+
+#pixeled
+
 # # draws the bot's eyes
 # def drawEyes(canvas, data, pixelLen):
 #     halfPixel = pixelLen / 2
@@ -39,9 +42,6 @@ def drawSadMouth(canvas, data, pixelLen):
     
 def drawSurprisedMouth(canvas, data, pixelLen):
     canvas.create_oval(data.width * 9 / 20, data.height / 3, data.width * 11 / 20, data.height / 2, fill = "black")
-    # canvas.create_rectangle(data.width / 3, data.height / 3 + (pixelLen * 3), data.width * 2 / 3, data.height / 3 + (pixelLen * 4), fill = "black")
-    # canvas.create_rectangle(data.width / 3 - pixelLen, data.height / 3 + (pixelLen * 2), data.width / 3, data.height / 3 + (pixelLen * 3), fill = "black")
-    # canvas.create_rectangle(data.width * 2 / 3, data.height / 3 + (pixelLen * 2), data.width * 2 / 3 + pixelLen, data.height / 3 + (pixelLen * 3), fill = "black")
     
 
 

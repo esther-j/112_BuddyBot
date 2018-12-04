@@ -33,8 +33,8 @@ import socket
 import threading
 from queue import Queue
 
-HOST = "128.237.187.197" # put your IP address here if playing on multiple computers
-PORT = 50003
+HOST = "128.237.186.41" # put your IP address here if playing on multiple computers
+PORT = 50010
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -54,20 +54,21 @@ def handleServerMsg(server, serverMsg):
       serverMsg.put(readyMsg)
       command = msg.split("\n")
 
-chatBot = ChatBot("buddyBot")
-chatBot.set_trainer(ListTrainer)
-
-trainingData  = "/Users/estherjang/Downloads/chatterbot-corpus-master/chatterbot_corpus/data/english/"
-
-for files in os.listdir(trainingData):
-        data = open(trainingData + files, 'r').readlines()
-        chatBot.train(data)
+# chatBot = ChatBot("buddyBot")
+# chatBot.set_trainer(ListTrainer)
+# 
+# trainingData  = "/Users/estherjang/Downloads/chatterbot-corpus-master/chatterbot_corpus/data/english/"
+# 
+# for files in os.listdir(trainingData):
+#         data = open(trainingData + files, 'r').readlines()
+#         chatBot.train(data)
 
 def init(data): 
     data.timer = 0
     data.blink = False
     data.mode = "start" 
     data.botColor = "LightBlue1"
+    setupChatBot(data)
     makeButtons(data)
     makeSettingsIcon(data)
     makeSettingsOptions(data)
@@ -80,15 +81,15 @@ def init(data):
     #trainEmotionDetector()
     data.detectFace = False
 
-def setupChatBot():
-    chatBot = ChatBot("buddyBot")
-    chatBot.set_trainer(ListTrainer)
+def setupChatBot(data):
+    data.chatBot = ChatBot("buddyBot")
+    data.chatBot.set_trainer(ListTrainer)
     
     trainingData  = "/Users/estherjang/Downloads/chatterbot-corpus-master/chatterbot_corpus/data/english/"
     
     for files in os.listdir(trainingData):
-            data = open(trainingData + files, 'r').readlines()
-            chatBot.train(data)
+            trainingFile = open(trainingData + files, 'r').readlines()
+            data.chatBot.train(trainingFile)
 
 def makeSettingsOptions(data):
     data.goHomeOption = SettingsOption(data.width / 6, data.height / 5, data.width / 30, "Go back home", "dark grey", data.height // 18)
@@ -184,7 +185,7 @@ def chatBotResponse(data, log):
     log.insert(END, "\nBuddyBot: %s" % data.chatResponse)
 
 def chatterBotResponse(data, log):
-    reply = chatBot.get_response(data.userEntry)
+    reply = data.chatBot.get_response(data.userEntry)
     message = str(reply)
     newMsg = ""
     for c in message:
