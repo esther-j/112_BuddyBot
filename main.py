@@ -30,10 +30,17 @@ import numpy as np
 from chatterbot import ChatBot
 from chatterbot.trainers import ListTrainer
 
+chatBot = ChatBot("buddyBot")
+chatBot.set_trainer(ListTrainer)
+
+trainingData  = "/Users/estherjang/Downloads/chatterbot-corpus-master/chatterbot_corpus/data/english/"
+
+for files in os.listdir(trainingData):
+        data = open(trainingData + files, 'r').readlines()
+        chatBot.train(data)
 
 def init(data): 
     data.timer = 0
-    setupChatBot()
     data.blink = False
     data.mode = "start" 
     data.botColor = "LightBlue1"

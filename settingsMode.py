@@ -1,6 +1,7 @@
 from tkinter import *
 import cv2
 from widgets import *
+
 ##### settings mode
 def settingsMousePressed(event, data):
     if data.settingsIcon.isPressed(event.x, event.y):
