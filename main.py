@@ -29,6 +29,30 @@ import cv2
 import numpy as np
 from chatterbot import ChatBot
 from chatterbot.trainers import ListTrainer
+import socket
+import threading
+from queue import Queue
+
+HOST = "128.237.187.197" # put your IP address here if playing on multiple computers
+PORT = 50003
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+server.connect((HOST,PORT))
+print("connected to server")
+
+def handleServerMsg(server, serverMsg):
+  server.setblocking(1)
+  msg = ""
+  command = ""
+  while True:
+    msg += server.recv(10).decode("UTF-8")
+    command = msg.split("\n")
+    while (len(command) > 1):
+      readyMsg = command[0]
+      msg = "\n".join(command[1:])
+      serverMsg.put(readyMsg)
+      command = msg.split("\n")
 
 chatBot = ChatBot("buddyBot")
 chatBot.set_trainer(ListTrainer)
@@ -53,8 +77,8 @@ def init(data):
     data.colorOptions = ["LightBlue1", "red", "orange", "yellow", "green", "blue", "purple"]
     data.chatResponse = ""
     data.emotion = "happy"
-    trainEmotionDetector()
-    data.detectFace = True
+    #trainEmotionDetector()
+    data.detectFace = False
 
 def setupChatBot():
     chatBot = ChatBot("buddyBot")
@@ -109,13 +133,13 @@ def keyPressed(event, data):
     elif data.mode == "help":
         helpKeyPressed(event, data)
         
-def timerFired(data, log): 
+def timerFired(data, log, entry): 
     if data.mode == "start":
         startTimerFired(data)
     elif data.mode == "settings":
         settingsTimerFired(data)
     elif data.mode == "run":
-        runTimerFired(data, log)
+        runTimerFired(data, log, entry)
     elif data.mode == "help":
         helpTimerFired(data)
         
@@ -182,12 +206,31 @@ def processMessage(data, log, entry):
     log.config(state = DISABLED)
     print(data.chatLog)
     
+# chatbot processes the message said by user
+def processFriendMessage(data, log, entry):
+    entry.delete(0, END)
+    data.chatLog.append(data.userEntry)
+    log.config(state = NORMAL)
+    log.insert(END, "\nFriend: %s" % data.userEntry)
+    # chatBotResponse(data, log)
+    chatterBotResponse(data, log)
+    log.yview_pickplace(END)
+    log.config(state = DISABLED)
+    print(data.chatLog)
+    
 # when return key is pressed, submit message
 def entryKeyPressed(event, data, entry, log):
+    msg = ""
+    
     entryLog = entry.get()
     if event.keysym == "Return" and len(entryLog) > 0:
         data.userEntry = entryLog
         processMessage(data, log, entry)
+        msg = "sent: %s\n" % data.userEntry
+        
+    if (msg != ""):
+      print ("sending: ", msg,)
+      data.server.send(msg.encode())
         
 # respond to different emotions
 def respondToEmotion(emotion, log):
@@ -226,7 +269,25 @@ def runMousePressed(event, data):
 def runKeyPressed(event, data):
     pass
     
-def runTimerFired(data, log):
+def runTimerFired(data, log, entry):
+    while (serverMsg.qsize() > 0):
+        msg = serverMsg.get(False)
+        try:
+            print("received: ", msg, "\n")
+            msg = msg.split()
+            command = msg[0]
+            
+            if command == "sent:":
+                userMsg = ""
+                for i in range(2, len(msg)):
+                    userMsg += msg[i] + " "
+                data.userEntry = userMsg
+                processFriendMessage(data, log, entry)
+        except:
+            print("failed")
+        serverMsg.task_done()
+                
+            
     data.timer += 1
     cap = cv2.VideoCapture(0)
     if data.detectFace:
@@ -266,7 +327,7 @@ def runRedrawAll(canvas, data):
 
 
     #################################### # use the run function as-is #################################### 
-def run(width=300, height=300):
+def run(width=300, height=300, serverMsg = None, server = None):
     def redrawAllWrapper(canvas, data, entry, scrollBar, log, button):
         canvas.delete(ALL)
         canvas.create_rectangle(0, 0, data.width, data.height,
@@ -283,7 +344,7 @@ def run(width=300, height=300):
         redrawAllWrapper(canvas, data, entry, scrollBar, log, button)
 
     def timerFiredWrapper(canvas, data, entry, scrollBar, log, button):
-        timerFired(data, log)
+        timerFired(data, log, entry)
         redrawAllWrapper(canvas, data, entry, scrollBar, log, button)
         # pause, then call timerFired again
         canvas.after(data.timerDelay, timerFiredWrapper, canvas, data, entry, scrollBar, log, button)
@@ -293,6 +354,8 @@ def run(width=300, height=300):
     # Set up data and call init
     class Struct(object): pass
     data = Struct()
+    data.server = server
+    data.serverMsg = serverMsg
     data.width = width
     data.height = height
     data.timerDelay = 10 # milliseconds
@@ -340,6 +403,9 @@ def run(width=300, height=300):
     # and launch the app
     root.mainloop()  # blocks until window is closed
 
-run(800, 500)
+serverMsg = Queue(100)
+threading.Thread(target = handleServerMsg, args = (server, serverMsg)).start()
+
+run(800, 500, serverMsg, server)
 cv2.destroyAllWindows()
 cap.release()
