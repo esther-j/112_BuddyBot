@@ -319,12 +319,14 @@ def entryKeyPressed(event, data, entry, log):
     if event.keysym == "Return" and len(entryLog) > 0:
         data.userEntry = entryLog
         processMessage(data, log, entry)
-        msg = "sent: %s" % data.userEntry
         numWords = 0
         for i in data.userEntry.split():
             numWords += 1
         if data.useBot:
-            msg += " also send: %s %d" % (data.chatResponse, numWords)
+            msg = "sent: bot %d %s" % (numWords, data.userEntry)
+            msg += " %s" % (data.chatResponse)
+        else:
+            msg = "sent: no %d %s" % (numWords, data.userEntry)
         msg += "\n"
         
     if (msg != ""):
@@ -390,13 +392,13 @@ def runTimerFired(data, log, entry):
             command = msg[0]
             if command == "sent:":
                 userMsg = ""
-                if set(["also", "send:", "BuddyBot:"]).issubset(msg):
-                    lenEntry = int(msg[-1])
-                    for i in range(2, 2 + lenEntry):
+                if msg[2] == "bot":
+                    lenEntry = int(msg[3])
+                    for i in range(4, 4 + lenEntry):
                         userMsg += msg[i] + " "
                     startBotEntry = 4 + lenEntry
                     botMsg = ""
-                    for i in range(startBotEntry, len(msg) - 1):
+                    for i in range(startBotEntry, len(msg)):
                         botMsg += msg[i] + " "
                     data.userEntry = userMsg
                     data.useBot = False
