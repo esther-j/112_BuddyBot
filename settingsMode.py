@@ -3,9 +3,12 @@ import cv2
 from widgets import *
 
 ##### settings mode
-def settingsMousePressed(event, data):
+def settingsMousePressed(event, data, log):
     if data.settingsIcon.isPressed(event.x, event.y):
-        data.mode = "run"
+        if data.previousMode == "run":
+            data.mode = "run"
+        elif data.previousMode == "friend":
+            data.mode = "friend"
     elif data.goHomeOption.isPressed(event.x, event.y):
         data.mode = "start"
     elif data.changeColorOption.isPressed(event.x, event.y):
@@ -23,6 +26,9 @@ def settingsMousePressed(event, data):
         else:
             data.detectFace = True
             data.faceDetectionOption.option = "Turn off face detection (currently on)"            
+    elif data.clearLogOption.isPressed(event.x, event.y):
+        clearLog(log)
+        print("cleared in settings")
     
 def settingsKeyPressed(event, data):
     pass
@@ -38,4 +44,12 @@ def settingsRedrawAll(canvas, data):
     data.settingsIcon.draw(canvas)
     data.goHomeOption.draw(canvas)
     data.changeColorOption.draw(canvas)
+    data.clearLogOption.draw(canvas)
     data.faceDetectionOption.draw(canvas)
+    
+def clearLog(log):
+    print("clearing")
+    log.config(state = NORMAL)
+    log.delete(1.0, END)
+    log.yview_pickplace(END)
+    log.config(state = DISABLED)

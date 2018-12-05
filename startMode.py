@@ -3,7 +3,7 @@ import cv2
 ###### start mode 
 def startMousePressed(event, data):
     if data.startButton.isPressed(event.x, event.y):
-        data.mode = "run"
+        data.mode = "modes"
     elif data.helpButton.isPressed(event.x, event.y):
         data.mode = "help"
         
