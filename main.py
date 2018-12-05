@@ -275,7 +275,16 @@ def chatterBotResponse(data, log):
     data.chatLog.append(data.chatResponse)
     log.insert(END, "\n" + data.chatResponse)
 
-
+def processBotMessage(data, log, entry):
+    entry.delete(0, END)
+    log.config(state = NORMAL)
+    print("ERROR HERE?")
+    log.insert(END, "\n" + data.chatResponse)
+    data.chatLog.append(data.chatResponse)
+    log.yview_pickplace(END)
+    log.config(state = DISABLED)
+    print(data.chatLog)
+    
 # chatbot processes the message said by user
 def processMessage(data, log, entry):
     entry.delete(0, END)
@@ -310,10 +319,16 @@ def entryKeyPressed(event, data, entry, log):
     if event.keysym == "Return" and len(entryLog) > 0:
         data.userEntry = entryLog
         processMessage(data, log, entry)
-        msg = "sent: %s\n" % data.userEntry
+        msg = "sent: %s" % data.userEntry
+        numWords = 0
+        for i in data.userEntry.split():
+            numWords += 1
+        if data.useBot:
+            msg += " also send: %s %d" % (data.chatResponse, numWords)
+        msg += "\n"
         
     if (msg != ""):
-      print("sending: ", msg,)
+      print("sending: ", msg)
       data.server.send(msg.encode())
         
 # respond to different emotions
@@ -342,9 +357,22 @@ def respondToEmotion(emotion, log):
         log.insert(END, "\nBuddyBot: %s" % msg)
     
 def sendMsg(data, log, entry):
-    if len(entry.get()) > 0:
-        data.userEntry = entry.get()
-        processMessage(data, log, entry)
+    msg = ""
+    
+    entryLog = entry.get()
+    data.userEntry = entry.get()
+    processMessage(data, log, entry)
+    msg = "sent: %s" % data.userEntry
+    numWords = 0
+    for i in data.userEntry.split():
+        numWords += 1
+    if data.useBot:
+        msg += " also send: %s %d" % (data.chatResponse, numWords)
+    msg += "\n"
+        
+    if (msg != ""):
+        print("sending: ", msg)
+        data.server.send(msg.encode())
         
 def runMousePressed(event, data):
     if data.settingsIcon.isPressed(event.x, event.y):
@@ -362,10 +390,25 @@ def runTimerFired(data, log, entry):
             command = msg[0]
             if command == "sent:":
                 userMsg = ""
-                for i in range(2, len(msg)):
-                    userMsg += msg[i] + " "
-                data.userEntry = userMsg
-                processFriendMessage(data, log, entry)
+                if set(["also", "send:", "BuddyBot:"]).issubset(msg):
+                    lenEntry = int(msg[-1])
+                    for i in range(2, 2 + lenEntry):
+                        userMsg += msg[i] + " "
+                    startBotEntry = 4 + lenEntry
+                    botMsg = ""
+                    for i in range(startBotEntry, len(msg) - 1):
+                        botMsg += msg[i] + " "
+                    data.userEntry = userMsg
+                    data.useBot = False
+                    processFriendMessage(data, log, entry)
+                    data.useBot = True
+                    data.chatResponse = botMsg
+                    processBotMessage(data, log, entry)
+                else:
+                    for i in range(2, len(msg)):
+                        userMsg += msg[i] + " "
+                    data.userEntry = userMsg
+                    processFriendMessage(data, log, entry)
         except:
             print("failed")
         serverMsg.task_done()

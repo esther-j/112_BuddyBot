@@ -17,6 +17,6 @@ def startRedrawAll(canvas, data):
     titleFontSize = data.height // 6
 
     canvas.create_rectangle(0, 0, data.width, data.height, fill = "LightBlue1", width = 0)
-    canvas.create_text(data.width / 2, data.height / 4, text = "BuddyBot", fill = "DeepSkyBlue2", font = "arial %d bold" % titleFontSize)
+    canvas.create_text(data.width / 2, data.height / 4, text = "BuddyChat", fill = "DeepSkyBlue2", font = "arial %d bold" % titleFontSize)
     data.startButton.draw(canvas)
     data.helpButton.draw(canvas)
