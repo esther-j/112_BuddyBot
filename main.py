@@ -323,10 +323,10 @@ def entryKeyPressed(event, data, entry, log):
         for i in data.userEntry.split():
             numWords += 1
         if data.useBot:
-            msg = "sent: bot %d %s" % (numWords, data.userEntry)
+            msg = "sent: bot %s %d %s" % (data.mode, numWords, data.userEntry)
             msg += " %s" % (data.chatResponse)
         else:
-            msg = "sent: no %d %s" % (numWords, data.userEntry)
+            msg = "sent: no %s %d %s" % (data.mode, numWords, data.userEntry)
         msg += "\n"
         
     if (msg != ""):
@@ -364,12 +364,14 @@ def sendMsg(data, log, entry):
     entryLog = entry.get()
     data.userEntry = entry.get()
     processMessage(data, log, entry)
-    msg = "sent: %s" % data.userEntry
     numWords = 0
     for i in data.userEntry.split():
         numWords += 1
     if data.useBot:
-        msg += " also send: %s %d" % (data.chatResponse, numWords)
+        msg = "sent: bot %s %d %s" % (data.mode, numWords, data.userEntry)
+        msg += " %s" % (data.chatResponse)
+    else:
+        msg = "sent: no %s %d %s" % (data.mode, numWords, data.userEntry)
     msg += "\n"
         
     if (msg != ""):
@@ -391,26 +393,28 @@ def runTimerFired(data, log, entry):
             msg = msg.split()
             command = msg[0]
             if command == "sent:":
-                userMsg = ""
-                if msg[2] == "bot":
-                    lenEntry = int(msg[3])
-                    for i in range(4, 4 + lenEntry):
-                        userMsg += msg[i] + " "
-                    startBotEntry = 4 + lenEntry
-                    botMsg = ""
-                    for i in range(startBotEntry, len(msg)):
-                        botMsg += msg[i] + " "
-                    data.userEntry = userMsg
-                    data.useBot = False
-                    processFriendMessage(data, log, entry)
-                    data.useBot = True
-                    data.chatResponse = botMsg
-                    processBotMessage(data, log, entry)
-                else:
-                    for i in range(2, len(msg)):
-                        userMsg += msg[i] + " "
-                    data.userEntry = userMsg
-                    processFriendMessage(data, log, entry)
+                if msg[3] == data.mode:
+                    userMsg = ""
+                    if msg[2] == "bot":
+                        lenEntry = int(msg[4])
+                        for i in range(5, 5 + lenEntry):
+                            userMsg += msg[i] + " "
+                        startBotEntry = 5 + lenEntry
+                        botMsg = ""
+                        for i in range(startBotEntry, len(msg)):
+                            botMsg += msg[i] + " "
+                        data.userEntry = userMsg
+                        data.useBot = False
+                        processFriendMessage(data, log, entry)
+                        data.useBot = True
+                        data.chatResponse = botMsg
+                        processBotMessage(data, log, entry)
+                    else:
+                        for i in range(5, len(msg)):
+                            userMsg += msg[i] + " "
+                        data.userEntry = userMsg
+                        processFriendMessage(data, log, entry)
+                
         except:
             print("failed")
         serverMsg.task_done()
