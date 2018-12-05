@@ -17,11 +17,10 @@ def helpRedrawAll(canvas, data):
     subtitle(data, canvas, data.width / 4, data.height / 20, "What is BuddyChat?")
     helpText = """\
     BuddyChat is a chatting platform that lets you chat with a friend or our
-    chatbot, BuddyBot! You can 
-    
-    BuddyBot is a friendly, interactive chatbot who is always down to have a 
-    conversation. BuddyBot can also detect emotions and wants to talk them out 
-    with you. The bot is also customizable so you can personalize it however you
-    want. This includes turning off face detection. 
+    chatbot, BuddyBot! BuddyBot is a friendly, interactive chatbot who is always 
+    down to have a conversation. BuddyChat comes with the feature of letting you 
+    communicate the often unspoken - your feelings. Your chatting experience is
+    also customizeable, allowing you to personalize it however you want. This
+    includes turning off the emotion detection feature.
     """
     canvas.create_text(0, data.height / 5, text = helpText, font = "arial 20", anchor = NW)
