@@ -1,9 +1,15 @@
+#### # Widgets
+### Sets up the different personlized widgets
+### Widgets include buttons, settings options, subtitles, and settings icon
+
 from tkinter import *
 
+# method to write a subtitle
 def subtitle(data, canvas, topX, topY, title):
     size = data.height / 10    
     canvas.create_text(topX, topY, text = title, font = "arial %d bold" % size, anchor = NW)
 
+# method to create a screen button
 class ScreenButton(object):
     def __init__(self, data, cx, cy, text):
         self.cx = cx
@@ -47,7 +53,8 @@ class SettingsOption(object):
             if mouseY >= self.y and mouseY <= self.y + self.boxLen:
                 return True
         return False
-        
+
+# method to create a settings icon
 class SettingsIcon(object):
     def __init__(self, len, height, leftCoordinate):
         self.color = "gray"

@@ -14,11 +14,15 @@ Face detection: https://docs.opencv.org/3.4.3/d7/d8b/tutorial_py_face_detection.
 Credit for emotion dataset images:
 Lucey, P., Cohn, J. F., Kanade, T., Saragih, J., Ambadar, Z., & Matthews, I. (2010). The Extended Cohn-Kanade Dataset (CK+): A complete expression dataset for action unit and emotion-specified expression. Proceedings of the Third International Workshop on CVPR for Human Communicative Behavior Analysis (CVPR4HB 2010), San Francisco, USA, 94-101
 """
+### emotionReader
+### Trains a face recognizer object to detect emotions
+### Opens webcam and looks for face
+### If a face is found, predict and return the emotion of it
+
 import cv2
 import random
 import numpy as np
 import os
-import time
 
 classifier = cv2.CascadeClassifier("/Users/estherjang/Documents/opencv/data/haarcascades/haarcascade_frontalface_default.xml")
 

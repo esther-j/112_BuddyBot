@@ -1,7 +1,9 @@
+##### help mode
+### Methods executed in help mode
+
 from widgets import subtitle
 from tkinter import *
 
-##### help mode
 def helpMousePressed(event, data):
     if data.backButton.isPressed(event.x, event.y):
         data.mode = "start"
@@ -11,7 +13,8 @@ def helpKeyPressed(event, data):
     
 def helpTimerFired(data):
     pass
-    
+
+# writes the help page
 def helpRedrawAll(canvas, data):
     data.backButton.draw(canvas)
     subtitle(data, canvas, data.width / 4, data.height / 20, "What is BuddyChat?")

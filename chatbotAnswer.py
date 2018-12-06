@@ -1,3 +1,6 @@
+### chatbotAnswer
+### Functions that create a chatbot response based on parsing the message
+
 import random 
 
 # user message is a question

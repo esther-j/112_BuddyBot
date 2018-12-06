@@ -15,6 +15,10 @@ Credit for ChatterBot tutorial: ChatterBot tutorial from https://www.youtube.com
 Credit for Sockets Tutorial (dots_client.py): https://drive.google.com/drive/folders/0B3Jab-H-9UIiZ2pXMExjdDV1dW8
 """
 
+### Main function to run the program
+### Holds the frame for switching between the main modes 
+### Holds the main run functions for chatting modes
+
 from messageResponses import *
 from chooseModes import *
 from widgetSetup import *

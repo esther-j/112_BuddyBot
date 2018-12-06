@@ -1,5 +1,7 @@
 ### chooseModes
+### Methods executed when the user picks chat mode
 
+# Different buttons on the modes page
 def modesMousePressed(event, data):
     if data.botModeButton.isPressed(event.x, event.y):
         data.mode = "run"
@@ -13,7 +15,8 @@ def modesKeyPressed(event, data):
 
 def modesTimerFired(data):
     pass
-    
+
+# Draws all the buttons
 def modesRedrawAll(canvas, data):
     canvas.create_rectangle(0, 0, data.width, data.height, fill = "LightBlue1", width = 0)
     data.botModeButton.draw(canvas)

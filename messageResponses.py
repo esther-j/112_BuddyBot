@@ -1,7 +1,10 @@
+### messageResponses
+### Contains all the different message handlers
+### Has chatbot message responses
+### Has user message processors
+
 from tkinter import *
 import random
-
-### messageResponses
 
 # holds the current different message types
 def messageType(data):
@@ -9,7 +12,7 @@ def messageType(data):
     question(data)
     farewell(data)
 
-# chat responds to user entry
+# chatbot responds to user entry using parsing method
 def chatBotResponse(data, log):
     data.userEntry.lower().strip()
     typicalResponse = ["ok", "nice", "sounds interesting"]
@@ -19,6 +22,7 @@ def chatBotResponse(data, log):
     data.chatLog.append(data.chatResponse)
     log.insert(END, "\n" + data.chatResponse)
 
+# chatbot responds to user entry using chatterbot
 def chatterBotResponse(data, log):
     reply = data.chatBot.get_response(data.userEntry)
     message = str(reply)
@@ -31,14 +35,13 @@ def chatterBotResponse(data, log):
     data.chatLog.append(data.chatResponse)
     log.insert(END, "\n" + data.chatResponse)
 
+# Process the message sent by the bot by adding to log
 def processBotMessage(data, log):
-   # entry.delete(0, END)
     log.config(state = NORMAL)
     log.insert(END, "\n" + data.chatResponse)
     data.chatLog.append(data.chatResponse)
     log.yview_pickplace(END)
     log.config(state = DISABLED)
-    print(data.chatLog)
     
 # chatbot processes the message said by user
 def processMessage(data, log, entry):
@@ -55,7 +58,6 @@ def processMessage(data, log, entry):
             chatterBotResponse(data, log)
     log.yview_pickplace(END)
     log.config(state = DISABLED)
-    print(data.chatLog)
     
 # chatbot processes the message said by user
 def processFriendMessage(data, log, entry):
@@ -71,9 +73,7 @@ def processFriendMessage(data, log, entry):
         else:
             chatterBotResponse(data, log)
     log.yview_pickplace(END)
-    log.config(state = DISABLED) 
-    print(data.chatLog)
-    
+    log.config(state = DISABLED)     
         
 # respond to different emotions
 def respondToEmotion(emotion, data, log):

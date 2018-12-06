@@ -5,6 +5,7 @@
 # by Rohan Varma
 # adapted by Kyle Chin
 #############################
+### Chatbot server for connecting between different run instances of the program
 
 import socket
 import threading

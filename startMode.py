@@ -1,6 +1,9 @@
+###### start mode 
+### Methods to be executed during start mode
+
 import cv2
 
-###### start mode 
+# Respond to button clicks
 def startMousePressed(event, data):
     if data.startButton.isPressed(event.x, event.y):
         data.mode = "modes"
@@ -13,6 +16,7 @@ def startKeyPressed(event, data):
 def startTimerFired(data):
     cv2.destroyAllWindows()
 
+# Write title and buttons
 def startRedrawAll(canvas, data):
     titleFontSize = data.height // 6
 
