@@ -1,5 +1,8 @@
+"""Credit for file writing: https://www.cs.cmu.edu/~112/notes/notes-strings.html"""
+
 from tkinter import *
 import cv2
+import os
 from widgets import *
 
 ##### settings mode
@@ -28,7 +31,8 @@ def settingsMousePressed(event, data, log):
             data.faceDetectionOption.option = "Turn off face detection (currently on)"            
     elif data.clearLogOption.isPressed(event.x, event.y):
         clearLog(log)
-        print("cleared in settings")
+    elif data.saveLogOption.isPressed(event.x, event.y):
+        saveLog(data.chatLog)
     
 def settingsKeyPressed(event, data):
     pass
@@ -46,10 +50,22 @@ def settingsRedrawAll(canvas, data):
     data.changeColorOption.draw(canvas)
     data.clearLogOption.draw(canvas)
     data.faceDetectionOption.draw(canvas)
+    data.saveLogOption.draw(canvas)
     
 def clearLog(log):
-    print("clearing")
     log.config(state = NORMAL)
     log.delete(1.0, END)
     log.yview_pickplace(END)
     log.config(state = DISABLED)
+
+def saveLog(chatLog):
+    chatScript = ""
+    for line in chatLog:
+        chatScript += line + "\n"
+    chatScript.strip()
+    writeFile("chatLog.txt", chatScript)
+
+def writeFile(path, contents):
+    os.remove(path)
+    with open(path, "wt") as f:
+        f.write(contents)

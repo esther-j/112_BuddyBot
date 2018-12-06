@@ -14,11 +14,12 @@ Credit for ChatterBot tutorial: ChatterBot tutorial from https://www.youtube.com
 
 Credit for Sockets Tutorial (dots_client.py): https://drive.google.com/drive/folders/0B3Jab-H-9UIiZ2pXMExjdDV1dW8
 """
-
+from chooseModes import *
+from widgetSetup import *
 from helpMode import *
 from startMode import *
 from settingsMode import *
-from widgets import *
+# from widgets import *
 from emotionReader import *
 from tkinter import *
 import time
@@ -28,8 +29,8 @@ from tkinter import *
 import random
 import cv2
 import numpy as np
-from chatterbot import ChatBot
-from chatterbot.trainers import ListTrainer
+# from chatterbot import ChatBot
+# from chatterbot.trainers import ListTrainer
 import socket
 import threading
 from queue import Queue
@@ -40,7 +41,7 @@ PORT = 50010
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 server.connect((HOST,PORT))
-print("connected to server")
+print("Connected to server")
 
 def handleServerMsg(server, serverMsg):
   server.setblocking(1)
@@ -60,7 +61,7 @@ def init(data):
     data.blink = False
     data.mode = "start" 
     data.botColor = "LightBlue1"
-   # setupChatBot(data)
+    setupChatBot(data)
     makeButtons(data)
     makeSettingsIcon(data)
     makeSettingsOptions(data)
@@ -72,49 +73,8 @@ def init(data):
     data.colorOptions = ["LightBlue1", "red", "orange", "yellow", "green", "blue", "purple"]
     data.chatResponse = ""
     data.emotion = "happy"
-    #trainEmotionDetector()
+    trainEmotionDetector()
     data.detectFace = False
-
-def setupChatBot(data):
-    data.chatBot = ChatBot("buddyBot")
-    data.chatBot.set_trainer(ListTrainer)
-    
-    trainingData  = "/Users/estherjang/Downloads/chatterbot-corpus-master/chatterbot_corpus/data/english/"
-    
-    for files in os.listdir(trainingData):
-            trainingFile = open(trainingData + files, 'r').readlines()
-            data.chatBot.train(trainingFile)
-
-def makeSettingsOptions(data):
-    data.goHomeOption = SettingsOption(data.width / 6, data.height / 5, data.width / 30, "Go back home", "dark grey", data.height // 18)
-    data.changeColorOption = SettingsOption(data.width / 6, data.height * 3 / 10, data.width / 30, "Change bot color", data.botColor, data.height // 18)
-    data.faceDetectionOption = SettingsOption(data.width / 6, data.height * 2 / 5, data.width / 30, "Turn off face detection (currently on)", "dark grey", data.height // 18)
-    data.clearLogOption = SettingsOption(data.width / 6, data.height / 2, data.width / 30, "Clear log", "dark grey", data.height // 18)
-
-def makeSettingsIcon(data):
-    lineLen = data.width / 25
-    lineHeight = data.height / 90
-    leftCor = data.width / 40
-    data.settingsIcon = SettingsIcon(lineLen, lineHeight, leftCor)    
-
-def makeButtons(data):
-    startY = data.height * 9 / 20
-    helpY = data.height * 3 / 5
-    buttonW = data.width / 10
-    buttonH = data.height / 20
-    buttonFontSize = data.height // 18
-    data.startButton = ScreenButton(data, data.width / 2, startY, "Start")
-    data.helpButton = ScreenButton(data, data.width / 2, helpY, "Help")
-    backX = data.width / 8
-    backY = data.height / 10
-    data.backButton = ScreenButton(data, backX, backY, "Back")
-    
-    data.botModeButton = ScreenButton(data, data.width / 4, data.height / 2, "BuddyBot Chat")
-    data.friendModeButton = ScreenButton(data, data.width * 3 / 4, data.height / 2, "Friend Chat")
-    data.botModeButton.width = data.width / 6
-    data.botModeButton.height = data.height / 4
-    data.friendModeButton.width = data.width / 6
-    data.friendModeButton.height = data.height / 4
     
 def mousePressed(event, data, log): 
     if data.mode == "start": 
@@ -180,7 +140,7 @@ def redrawAll(canvas, data, entry, scrollBar, log, button):
         if data.previousMode != "friend":
             print("cleared in friend")
             clearLog(log)
-            del data.chatLog[:]
+            data.chatLog = []
         data.useBot = False
         drawWidgets(log, entry, button, scrollBar, canvas)
         friendRedrawAll(canvas, data)
@@ -202,26 +162,6 @@ def eraseWidgets(log, entry, button, scrollBar, canvas):
     button.grid_forget()
     scrollBar.grid_forget()
     button.grid_forget()
-    
-def modesMousePressed(event, data):
-    if data.botModeButton.isPressed(event.x, event.y):
-        data.mode = "run"
-    elif data.friendModeButton.isPressed(event.x, event.y):
-        data.mode = "friend"
-    elif data.backButton.isPressed(event.x, event.y):
-        data.mode = "start"
-
-def modesKeyPressed(event, data):
-    pass
-
-def modesTimerFired(data):
-    pass
-    
-def modesRedrawAll(canvas, data):
-    canvas.create_rectangle(0, 0, data.width, data.height, fill = "LightBlue1", width = 0)
-    data.botModeButton.draw(canvas)
-    data.friendModeButton.draw(canvas)
-    data.backButton.draw(canvas)
     
 def friendMousePressed(event, data):
     if data.settingsIcon.isPressed(event.x, event.y):
@@ -278,7 +218,6 @@ def chatterBotResponse(data, log):
 def processBotMessage(data, log, entry):
     entry.delete(0, END)
     log.config(state = NORMAL)
-    print("ERROR HERE?")
     log.insert(END, "\n" + data.chatResponse)
     data.chatLog.append(data.chatResponse)
     log.yview_pickplace(END)
@@ -292,8 +231,8 @@ def processMessage(data, log, entry):
     log.insert(END, "\nYou: %s" % data.userEntry)
     data.chatLog.append("You: %s" % data.userEntry)
     if data.useBot:
-        chatBotResponse(data, log)
-    # chatterBotResponse(data, log)
+        # chatBotResponse(data, log)
+        chatterBotResponse(data, log)
     log.yview_pickplace(END)
     log.config(state = DISABLED)
     print(data.chatLog)
@@ -386,6 +325,7 @@ def runKeyPressed(event, data):
     pass
     
 def runTimerFired(data, log, entry):
+    currentFriendMode = ""
     while (serverMsg.qsize() > 0):
         msg = serverMsg.get(False)
         try:
@@ -393,6 +333,7 @@ def runTimerFired(data, log, entry):
             msg = msg.split()
             command = msg[0]
             if command == "sent:":
+                currentFriendMode = msg[3]
                 if msg[3] == data.mode:
                     userMsg = ""
                     if msg[2] == "bot":
@@ -403,47 +344,62 @@ def runTimerFired(data, log, entry):
                         botMsg = ""
                         for i in range(startBotEntry, len(msg)):
                             botMsg += msg[i] + " "
-                        data.userEntry = userMsg
+                        data.userEntry = userMsg.strip()
                         data.useBot = False
                         processFriendMessage(data, log, entry)
                         data.useBot = True
-                        data.chatResponse = botMsg
+                        data.chatResponse = botMsg.strip()
                         processBotMessage(data, log, entry)
                     else:
                         for i in range(5, len(msg)):
                             userMsg += msg[i] + " "
                         data.userEntry = userMsg
                         processFriendMessage(data, log, entry)
+            elif command == "emotion":
+                friendEmotion = msg[2]
+                data.emotion = friendEmotion
                 
         except:
             print("failed")
         serverMsg.task_done()
-                
-            
+    
+    try:
+        talkingToFriend = (currentFriendMode != "" and data.mode == "friend" and currentFriendMode == "friend")
+    except:
+        talkingToFriend = False
+    
+    newMsg = ""
     data.timer += 1
     cap = cv2.VideoCapture(0)
     if data.detectFace:
         getEmotion()
-        # writes an overall emotion for every 10 emotions
-        if len(foundEmotions) == 10:
+        # writes an overall emotion for every 5 emotions
+        if len(foundEmotions) == 5:
             overallEmotion = predictOverallEmotion(foundEmotions)
             data.overallEmotions.append(overallEmotion)
             del foundEmotions[:]
-        # when 10 overall emotions are found, check up on user
-        
-        if len(data.overallEmotions) == 10:
-            mainEmotion = predictOverallEmotion(data.overallEmotions)
-            log.config(state = NORMAL)
-            respondToEmotion(mainEmotion, log)
-            data.emotion = mainEmotion
-            data.overallEmotions = []
-            log.yview_pickplace(END)
-            log.config(state = DISABLED)
+        # when 5 overall emotions are found, check up on user
+        if talkingToFriend or currentFriendMode == "":
+            if len(data.overallEmotions) == 5:
+                mainEmotion = predictOverallEmotion(data.overallEmotions)
+                if currentFriendMode == "":
+                    log.config(state = NORMAL)
+                    respondToEmotion(mainEmotion, log)
+                    data.emotion = mainEmotion
+                    data.overallEmotions = []
+                    log.yview_pickplace(END)
+                    log.config(state = DISABLED)
+                else:
+                    newMsg = "emotion: %s\n" % mainEmotion
         print("all emotions", data.overallEmotions)
     else:
         cap.release()
         cv2.destroyAllWindows()
-
+        
+    if (newMsg != ""): 
+        print("sending: ", newMsg)
+        data.server.send(newMsg.encode())
+      
 def runRedrawAll(canvas, data):
     canvas.create_rectangle(0, 0, data.width, data.height, fill = data.botColor, width = 0)
     pixelLen = data.width / 30
