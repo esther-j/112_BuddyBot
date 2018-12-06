@@ -1,6 +1,4 @@
 You: hi
-BuddyBot: How are you doing?
-You: im doing ok wat about u
-BuddyBot: I'm also good.
-You: yay
-BuddyBot: yes i am
+BuddyBot: yay
+You: hello
+BuddyBot: hellooo

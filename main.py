@@ -14,23 +14,21 @@ Credit for ChatterBot tutorial: ChatterBot tutorial from https://www.youtube.com
 
 Credit for Sockets Tutorial (dots_client.py): https://drive.google.com/drive/folders/0B3Jab-H-9UIiZ2pXMExjdDV1dW8
 """
+
+from messageResponses import *
 from chooseModes import *
 from widgetSetup import *
 from helpMode import *
 from startMode import *
 from settingsMode import *
-# from widgets import *
 from emotionReader import *
 from tkinter import *
-import time
 from drawChatbot import *
 from chatbotAnswer import *
 from tkinter import *
 import random
 import cv2
 import numpy as np
-# from chatterbot import ChatBot
-# from chatterbot.trainers import ListTrainer
 import socket
 import threading
 from queue import Queue
@@ -163,6 +161,8 @@ def eraseWidgets(log, entry, button, scrollBar, canvas):
     scrollBar.grid_forget()
     button.grid_forget()
     
+### friendChat mode
+
 def friendMousePressed(event, data):
     if data.settingsIcon.isPressed(event.x, event.y):
         data.mode = "settings"
@@ -187,69 +187,6 @@ def friendRedrawAll(canvas, data):
     data.settingsIcon.draw(canvas)
     
 ##### run chatbot mode
-# holds the current different message types
-def messageType(data):
-    greeting(data)
-    question(data)
-    farewell(data)
-
-# chat responds to user entry
-def chatBotResponse(data, log):
-    data.userEntry.lower().strip()
-    typicalResponse = ["ok", "nice", "sounds interesting"]
-    data.chatResponse = random.choice(typicalResponse)
-    messageType(data)
-    data.chatResponse = "BuddyBot: %s" % data.chatResponse
-    data.chatLog.append(data.chatResponse)
-    log.insert(END, "\n" + data.chatResponse)
-
-def chatterBotResponse(data, log):
-    reply = data.chatBot.get_response(data.userEntry)
-    message = str(reply)
-    newMsg = ""
-    for c in message:
-        if c != "-":
-            newMsg += c
-    data.chatResponse = newMsg.strip()
-    data.chatResponse = "BuddyBot: %s" % data.chatResponse
-    data.chatLog.append(data.chatResponse)
-    log.insert(END, "\n" + data.chatResponse)
-
-def processBotMessage(data, log, entry):
-    entry.delete(0, END)
-    log.config(state = NORMAL)
-    log.insert(END, "\n" + data.chatResponse)
-    data.chatLog.append(data.chatResponse)
-    log.yview_pickplace(END)
-    log.config(state = DISABLED)
-    print(data.chatLog)
-    
-# chatbot processes the message said by user
-def processMessage(data, log, entry):
-    entry.delete(0, END)
-    log.config(state = NORMAL)
-    log.insert(END, "\nYou: %s" % data.userEntry)
-    data.chatLog.append("You: %s" % data.userEntry)
-    if data.useBot:
-        # chatBotResponse(data, log)
-        chatterBotResponse(data, log)
-    log.yview_pickplace(END)
-    log.config(state = DISABLED)
-    print(data.chatLog)
-    
-# chatbot processes the message said by user
-def processFriendMessage(data, log, entry):
-    entry.delete(0, END)
-    log.config(state = NORMAL)
-    log.insert(END, "\nFriend: %s" % data.userEntry)
-    data.chatLog.append("Friend: %s" % data.userEntry)
-    if data.useBot:
-        chatterBotResponse(data, log)
-    # chatBotResponse(data, log)
-    log.yview_pickplace(END)
-    log.config(state = DISABLED) 
-    print(data.chatLog)
-    
 # when return key is pressed, submit message
 def entryKeyPressed(event, data, entry, log):
     msg = ""
@@ -271,31 +208,6 @@ def entryKeyPressed(event, data, entry, log):
     if (msg != ""):
       print("sending: ", msg)
       data.server.send(msg.encode())
-        
-# respond to different emotions
-def respondToEmotion(emotion, log):
-    msg = ""
-    if emotion == "happy":
-        happyResponses = ["I'm glad you're happy! That makes me happy too :)",
-                        "Did something exciting happen? You seem happy!",
-                        "Seeing you smile makes me smile too :)",
-                        "You seem happy recently, by the way. Yay!"]
-        msg = random.choice(happyResponses)
-    elif emotion == "sad":
-        sadResponses = ["You seem sad recently. What's up?",
-                        "What's making you feel down, by the way?",
-                        "I noticed that you seem sad. Want to talk about it?"]
-        msg = random.choice(sadResponses)
-    elif emotion == "angry":
-        angryResponses = ["Ah! You seem kind of angry recently",
-                        "You seem upset. What's wrong?"]
-        msg = random.choice(angryResponses)
-    elif emotion == "surprised":
-        surpriseResponses = ["Did something happen? Why do you seem surprised?"
-                            "What's new? You look surprised"]
-        msg = random.choice(surpriseResponses)
-    if len(msg) != 0:
-        log.insert(END, "\nBuddyBot: %s" % msg)
     
 def sendMsg(data, log, entry):
     msg = ""
@@ -349,7 +261,7 @@ def runTimerFired(data, log, entry):
                         processFriendMessage(data, log, entry)
                         data.useBot = True
                         data.chatResponse = botMsg.strip()
-                        processBotMessage(data, log, entry)
+                        processBotMessage(data, log)
                     else:
                         for i in range(5, len(msg)):
                             userMsg += msg[i] + " "
@@ -384,7 +296,7 @@ def runTimerFired(data, log, entry):
                 mainEmotion = predictOverallEmotion(data.overallEmotions)
                 if currentFriendMode == "":
                     log.config(state = NORMAL)
-                    respondToEmotion(mainEmotion, log)
+                    respondToEmotion(mainEmotion, data, log, entry)
                     data.emotion = mainEmotion
                     data.overallEmotions = []
                     log.yview_pickplace(END)
